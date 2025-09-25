@@ -12,6 +12,10 @@
     th,td{border-bottom:1px solid var(--border);padding:8px;color:var(--text);}
     th{background:#2d3748;color:#ffffff;text-align:left;font-weight:600;}
     .count{color:var(--muted);}
+    .delete-btn{background:#ef4444;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500;margin-left:8px;}
+    .delete-btn:hover{background:#dc2626;}
+    .batch-actions{margin-top:12px;padding:12px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;}
+    .checkbox{margin-right:8px;}
   </style>
 </head>
 <body>
@@ -48,17 +52,26 @@
           <button id="btn-refresh" class="btn">刷新</button>
           <button id="btn-export" class="btn">导出Excel（CSV）</button>
         </div>
+        
+        <div class="batch-actions" style="display:none;" id="batch-actions">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span>已选择 <span id="selected-count">0</span> 条记录</span>
+            <button id="btn-delete-selected" class="delete-btn">删除选中</button>
+            <button id="btn-select-all" class="btn" style="font-size:12px;">全选</button>
+            <button id="btn-clear-selection" class="btn" style="font-size:12px;">取消选择</button>
+          </div>
+        </div>
       </div>
 
       <div class="card">
         <table id="data-table">
           <thead>
           <tr>
-            <th>姓名</th>
+            <th><input type="checkbox" id="select-all-checkbox" class="checkbox"> 姓名</th>
             <th>完成时间</th>
             <th>霍兰德代码</th>
             <th>MBTI代码</th>
-            <th>操作</th>
+            <th style="width:180px;">操作</th>
           </tr>
           </thead>
           <tbody></tbody>
@@ -142,17 +155,21 @@
       rows.forEach((r, index) => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td>${escapeHtml(r.name)}</td>
+          <td><input type="checkbox" class="row-checkbox checkbox" data-index="${index}" data-name="${escapeHtml(r.name)}" data-timestamp="${r.timestamp}"> ${escapeHtml(r.name)}</td>
           <td>${formatTime(r.timestamp)}</td>
           <td>${escapeHtml(r.holland)}</td>
           <td>${escapeHtml(r.mbti)}</td>
-          <td><button onclick="showDetail(${index})" style="padding:6px 12px;font-size:12px;background:#3b82f6;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:500;">查看详情</button></td>
+          <td>
+            <button onclick="showDetail(${index})" style="padding:6px 12px;font-size:12px;background:#3b82f6;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:500;">查看详情</button>
+            <button onclick="deleteRecord(${index})" class="delete-btn">删除</button>
+          </td>
         `;
         tbody.appendChild(tr);
       });
       // 保存当前数据供详情查看使用
       window.currentTableData = rows;
       console.log('表格已渲染，行数：', rows.length);
+      updateBatchActions();
     }
 
     function formatTime(ts) {
@@ -356,23 +373,192 @@
 
     function calculateMBTIScores(answers) {
       const scores = { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
-      const mbtiMapping = [
-        'E','I','S','N','T','F','J','P','E','I','S','N','T','F','J','P','E','I','S','N',
-        'T','F','J','P','E','I','S','N','T','F','J','P','E','I','S','N','T','F','J','P',
-        'E','I','S','N','T','F','J','P','E','I','S','N','T','F','J','P','E','I','S','N',
-        'T','F','J','P','E','I','S','N','T','F','J','P','E','I','S','N','T','F','J','P',
-        'E','I','S','N','T','F','J','P','E','I','S','N','T','F','J','P','E','I','S','N',
-        'T','F','J','P','E','I','S','N','T','F','J','P','E','I','S','N','T','F','J','P'
-      ];
+      
+      // MBTI 100题分为4个维度，每个维度25题
+      // 第1-25题：E vs I (外向 vs 内向) - A选项=E，B选项=I
+      // 第26-50题：S vs N (感觉 vs 直觉) - A选项=S，B选项=N
+      // 第51-75题：T vs F (思考 vs 情感) - A选项=T，B选项=F
+      // 第76-100题：J vs P (判断 vs 知觉) - A选项=J，B选项=P
       
       answers.forEach((answer, index) => {
-        if (answer && mbtiMapping[index]) {
-          scores[mbtiMapping[index]]++;
+        if (!answer) return; // 跳过未回答的题目
+        
+        if (index < 25) {
+          // 第1-25题：E vs I
+          if (answer === 'A') {
+            scores.E++;
+          } else if (answer === 'B') {
+            scores.I++;
+          }
+        } else if (index < 50) {
+          // 第26-50题：S vs N
+          if (answer === 'A') {
+            scores.S++;
+          } else if (answer === 'B') {
+            scores.N++;
+          }
+        } else if (index < 75) {
+          // 第51-75题：T vs F
+          if (answer === 'A') {
+            scores.T++;
+          } else if (answer === 'B') {
+            scores.F++;
+          }
+        } else if (index < 100) {
+          // 第76-100题：J vs P
+          if (answer === 'A') {
+            scores.J++;
+          } else if (answer === 'B') {
+            scores.P++;
+          }
         }
       });
       
       return scores;
     }
+
+    // 删除功能
+    async function deleteRecord(index) {
+      const user = window.currentTableData[index];
+      if (!user) {
+        alert('未找到要删除的记录');
+        return;
+      }
+      
+      if (!confirm(`确定要删除 "${user.name}" 的测试记录吗？此操作不可恢复！`)) {
+        return;
+      }
+      
+      try {
+        // 从 Supabase 删除
+        if (window.supabaseClient) {
+          const { error } = await window.supabaseClient
+            .from('test_results')
+            .delete()
+            .eq('name', user.name)
+            .eq('timestamp', user.timestamp);
+          
+          if (error) throw error;
+          console.log('从 Supabase 删除成功');
+        }
+        
+        // 从本地存储删除
+        const localData = JSON.parse(localStorage.getItem('testResults') || '[]');
+        const filteredData = localData.filter(item => 
+          !(item.name === user.name && item.timestamp === user.timestamp)
+        );
+        localStorage.setItem('testResults', JSON.stringify(filteredData));
+        
+        alert('删除成功！');
+        refresh();
+      } catch (error) {
+        console.error('删除失败：', error);
+        alert('删除失败：' + error.message);
+      }
+    }
+    
+    async function deleteSelectedRecords() {
+      const checkboxes = document.querySelectorAll('.row-checkbox:checked');
+      if (checkboxes.length === 0) {
+        alert('请先选择要删除的记录');
+        return;
+      }
+      
+      if (!confirm(`确定要删除选中的 ${checkboxes.length} 条记录吗？此操作不可恢复！`)) {
+        return;
+      }
+      
+      try {
+        const recordsToDelete = Array.from(checkboxes).map(cb => ({
+          name: cb.dataset.name,
+          timestamp: cb.dataset.timestamp
+        }));
+        
+        // 从 Supabase 批量删除
+        if (window.supabaseClient) {
+          for (const record of recordsToDelete) {
+            const { error } = await window.supabaseClient
+              .from('test_results')
+              .delete()
+              .eq('name', record.name)
+              .eq('timestamp', record.timestamp);
+            
+            if (error) throw error;
+          }
+          console.log('从 Supabase 批量删除成功');
+        }
+        
+        // 从本地存储批量删除
+        const localData = JSON.parse(localStorage.getItem('testResults') || '[]');
+        const filteredData = localData.filter(item => 
+          !recordsToDelete.some(record => 
+            item.name === record.name && item.timestamp === record.timestamp
+          )
+        );
+        localStorage.setItem('testResults', JSON.stringify(filteredData));
+        
+        alert(`成功删除 ${recordsToDelete.length} 条记录！`);
+        refresh();
+      } catch (error) {
+        console.error('批量删除失败：', error);
+        alert('批量删除失败：' + error.message);
+      }
+    }
+    
+    function updateBatchActions() {
+      const checkboxes = document.querySelectorAll('.row-checkbox');
+      const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
+      const batchActions = document.getElementById('batch-actions');
+      const selectedCount = document.getElementById('selected-count');
+      
+      if (checkedBoxes.length > 0) {
+        batchActions.style.display = 'block';
+        selectedCount.textContent = checkedBoxes.length;
+      } else {
+        batchActions.style.display = 'none';
+      }
+      
+      // 更新全选复选框状态
+      const selectAllCheckbox = document.getElementById('select-all-checkbox');
+      if (checkboxes.length === 0) {
+        selectAllCheckbox.indeterminate = false;
+        selectAllCheckbox.checked = false;
+      } else if (checkedBoxes.length === checkboxes.length) {
+        selectAllCheckbox.indeterminate = false;
+        selectAllCheckbox.checked = true;
+      } else if (checkedBoxes.length > 0) {
+        selectAllCheckbox.indeterminate = true;
+        selectAllCheckbox.checked = false;
+      } else {
+        selectAllCheckbox.indeterminate = false;
+        selectAllCheckbox.checked = false;
+      }
+    }
+    
+    // 批量操作事件监听
+    document.getElementById('btn-delete-selected').addEventListener('click', deleteSelectedRecords);
+    
+    document.getElementById('btn-select-all').addEventListener('click', () => {
+      document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = true);
+      updateBatchActions();
+    });
+    
+    document.getElementById('btn-clear-selection').addEventListener('click', () => {
+      document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = false);
+      updateBatchActions();
+    });
+    
+    document.getElementById('select-all-checkbox').addEventListener('change', (e) => {
+      document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = e.target.checked);
+      updateBatchActions();
+    });
+    
+    // 监听行复选框变化
+    document.addEventListener('change', (e) => {
+      if (e.target.classList.contains('row-checkbox')) {
+        updateBatchActions();
+      }
+    });
 
     // 点击弹窗外部关闭
     document.getElementById('detail-modal').addEventListener('click', (e) => {
