@@ -1,0 +1,4 @@
+部署时间戳: 2025-09-25 13:15:00
+管理后台更新: 添加查看详情功能
+包含文件: admin.html, index.html, app.js, styles.css, supabase-config.js
+功能: 霍兰德详细得分 + MBTI倾向分析
