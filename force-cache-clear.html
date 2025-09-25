@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>缓存清除测试</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+</head>
+<body>
+    <h1>缓存清除测试页面</h1>
+    <p>时间戳: <span id="timestamp"></span></p>
+    <p>如果看到这个页面，说明缓存已清除</p>
+    
+    <script>
+        document.getElementById('timestamp').textContent = new Date().toLocaleString('zh-CN');
+    </script>
+</body>
+</html>
