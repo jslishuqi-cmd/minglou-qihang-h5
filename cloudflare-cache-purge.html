@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloudflare 缓存清除指南</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; line-height: 1.6; }
+        .step { background: #f8fafc; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #3b82f6; }
+        .code { background: #1e293b; color: #e2e8f0; padding: 10px; border-radius: 6px; font-family: 'Courier New', monospace; }
+        .warning { background: #fef3c7; border-left-color: #f59e0b; }
+        .success { background: #d1fae5; border-left-color: #10b981; }
+    </style>
+</head>
+<body>
+    <h1>🚀 Cloudflare Pages 缓存清除指南</h1>
+    
+    <div class="step warning">
+        <h3>⚠️ 当前问题</h3>
+        <p>线上管理后台缺少"操作"列，表头文字颜色不清晰。本地代码已修复，但 Cloudflare Pages 可能使用了缓存版本。</p>
+    </div>
+
+    <div class="step">
+        <h3>🔧 已完成的修复</h3>
+        <ul>
+            <li>✅ 表头颜色：从 <code>#12151b</code> 改为 <code>#2d3748</code>，文字改为白色</li>
+            <li>✅ 操作列：确保包含"查看详情"按钮</li>
+            <li>✅ 代码推送：已强制推送到 GitHub</li>
+        </ul>
+    </div>
+
+    <div class="step">
+        <h3>🌐 手动清除 Cloudflare 缓存步骤</h3>
+        <ol>
+            <li>访问 <a href="https://dash.cloudflare.com" target="_blank">Cloudflare Dashboard</a></li>
+            <li>找到 <strong>minglou-qihang-h5</strong> 项目</li>
+            <li>进入 <strong>Pages</strong> 页面</li>
+            <li>点击项目名称进入详情</li>
+            <li>找到 <strong>"Purge Cache"</strong> 或 <strong>"清除缓存"</strong> 按钮</li>
+            <li>选择 <strong>"Purge Everything"</strong></li>
+            <li>等待 2-5 分钟让系统重新构建</li>
+        </ol>
+    </div>
+
+    <div class="step">
+        <h3>🔄 强制重新部署</h3>
+        <p>如果清除缓存无效，可以触发重新部署：</p>
+        <ol>
+            <li>在 Cloudflare Pages 项目页面</li>
+            <li>找到 <strong>"Deployments"</strong> 标签</li>
+            <li>点击最新部署旁的 <strong>"Retry deployment"</strong></li>
+            <li>或者点击 <strong>"Create deployment"</strong> 手动触发</li>
+        </ol>
+    </div>
+
+    <div class="step success">
+        <h3>✅ 验证修复</h3>
+        <p>修复完成后，请验证：</p>
+        <ol>
+            <li>访问：<a href="https://minglou-qihang-h5.pages.dev/admin.html" target="_blank">管理后台</a></li>
+            <li>输入密码：<code>82809988</code></li>
+            <li>检查表头是否清晰可见（白色文字，深灰背景）</li>
+            <li>检查是否有"操作"列和"查看详情"按钮</li>
+        </ol>
+    </div>
+
+    <div class="step">
+        <h3>🆘 备用方案</h3>
+        <p>如果 Cloudflare 仍有问题，我已创建备用文件：</p>
+        <ul>
+            <li><strong>admin-fixed.html</strong> - 完整修复版本</li>
+            <li>可以临时重命名为 admin.html 使用</li>
+            <li>或者部署到其他平台（Vercel、Netlify）</li>
+        </ul>
+    </div>
+
+    <div class="code">
+        <strong>当前线上地址：</strong><br>
+        用户端：https://minglou-qihang-h5.pages.dev<br>
+        管理端：https://minglou-qihang-h5.pages.dev/admin.html<br>
+        管理密码：82809988
+    </div>
+
+    <p><strong>预计解决时间：</strong>清除缓存后 2-5 分钟内生效</p>
+</body>
+</html>

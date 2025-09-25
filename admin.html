@@ -128,8 +128,8 @@
           timestamp: x.timestamp || '',
           holland: x.holland || '',
           mbti: x.mbti || '',
-          holland_answers: x.holland_answers || [],
-          mbti_answers: x.mbti_answers || []
+          holland_answers: x.holland_answers || x.hollandAnswers || [],
+          mbti_answers: x.mbti_answers || x.mbtiAnswers || []
         })).reverse();
       } catch (_) {
         return [];
@@ -368,11 +368,19 @@
         }
       });
       
+      console.log('MBTI计算结果:', scores);
       return scores;
     }
 
     function calculateMBTIScores(answers) {
       const scores = { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
+      
+      if (!answers || !Array.isArray(answers)) {
+        console.warn('MBTI答题数据无效:', answers);
+        return scores;
+      }
+      
+      console.log('MBTI答题数据长度:', answers.length, '前10个答案:', answers.slice(0, 10));
       
       // MBTI 100题分为4个维度，每个维度25题
       // 第1-25题：E vs I (外向 vs 内向) - A选项=E，B选项=I
@@ -381,7 +389,9 @@
       // 第76-100题：J vs P (判断 vs 知觉) - A选项=J，B选项=P
       
       answers.forEach((answer, index) => {
-        if (!answer) return; // 跳过未回答的题目
+        if (!answer || (answer !== 'A' && answer !== 'B')) {
+        return; // 跳过无效答案
+      }
         
         if (index < 25) {
           // 第1-25题：E vs I

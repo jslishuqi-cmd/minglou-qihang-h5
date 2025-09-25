@@ -452,8 +452,8 @@ async function saveResult(holland, mbti) {
             holland: result.holland,
             mbti: result.mbti,
             timestamp: result.timestamp,
-            hollandAnswers: appState.hollandAnswers,
-            mbtiAnswers: appState.mbtiAnswers
+            holland_answers: appState.hollandAnswers,
+            mbti_answers: appState.mbtiAnswers
         });
         localStorage.setItem('testResults', JSON.stringify(existingResults));
     } catch (_) {}

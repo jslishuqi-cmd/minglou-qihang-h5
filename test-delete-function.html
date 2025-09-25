@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>删除功能测试</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 20px; }
+    .delete-btn{background:#ef4444;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500;margin-left:8px;}
+    .delete-btn:hover{background:#dc2626;}
+    table{width:100%;border-collapse:collapse;border:1px solid #ddd;}
+    th,td{border-bottom:1px solid #ddd;padding:12px;text-align:left;}
+    th{background:#2d3748;color:#ffffff;}
+    .checkbox{margin-right:8px;}
+  </style>
+</head>
+<body>
+  <h1>删除功能测试页面</h1>
+  <p>这个页面用来测试删除按钮是否正常显示和工作</p>
+  
+  <table>
+    <thead>
+      <tr>
+        <th><input type="checkbox" class="checkbox"> 姓名</th>
+        <th>完成时间</th>
+        <th>霍兰德代码</th>
+        <th>MBTI代码</th>
+        <th style="width:180px;">操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><input type="checkbox" class="checkbox"> 测试用户1</td>
+        <td>2025-01-25 10:30:00</td>
+        <td>ESI</td>
+        <td>ENFP</td>
+        <td>
+          <button onclick="alert('查看详情功能')" style="padding:6px 12px;font-size:12px;background:#3b82f6;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:500;">查看详情</button>
+          <button onclick="alert('删除功能')" class="delete-btn">删除</button>
+        </td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" class="checkbox"> 测试用户2</td>
+        <td>2025-01-25 11:15:00</td>
+        <td>RIA</td>
+        <td>INTJ</td>
+        <td>
+          <button onclick="alert('查看详情功能')" style="padding:6px 12px;font-size:12px;background:#3b82f6;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:500;">查看详情</button>
+          <button onclick="alert('删除功能')" class="delete-btn">删除</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top:20px; padding:15px; background:#f0f9ff; border-radius:8px;">
+    <h3>检查项目：</h3>
+    <ul>
+      <li>✅ 是否能看到红色的"删除"按钮？</li>
+      <li>✅ 点击删除按钮是否弹出提示？</li>
+      <li>✅ 删除按钮是否在"查看详情"按钮右侧？</li>
+      <li>✅ 鼠标悬停时删除按钮是否变深红色？</li>
+    </ul>
+  </div>
+
+  <div style="margin-top:20px; padding:15px; background:#fef3c7; border-radius:8px;">
+    <h3>如果看不到删除按钮，请尝试：</h3>
+    <ol>
+      <li><strong>硬刷新</strong>：按 Ctrl+F5 (Windows) 或 Cmd+Shift+R (Mac)</li>
+      <li><strong>清除缓存</strong>：浏览器设置 → 清除浏览数据 → 缓存图像和文件</li>
+      <li><strong>无痕模式</strong>：在无痕/隐私模式下打开页面</li>
+      <li><strong>检查控制台</strong>：按F12打开开发者工具，查看是否有错误</li>
+    </ol>
+  </div>
+</body>
+</html>
