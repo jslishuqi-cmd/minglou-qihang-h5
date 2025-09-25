@@ -1,0 +1,171 @@
+/* 温暖现代配色主题 */
+:root{
+  --bg:#f8fafc;
+  --bg-grad-start:#667eea;
+  --bg-grad-end:#764ba2;
+  --card:rgba(255,255,255,0.95);
+  --text:#1e293b;
+  --muted:#64748b;
+  --primary:#3b82f6;
+  --primary-weak:#dbeafe;
+  --success:#10b981;
+  --danger:#ef4444;
+  --border:rgba(148,163,184,0.3);
+  --shadow:rgba(0,0,0,0.1);
+}
+
+*{box-sizing:border-box;}
+html,body{
+  margin:0;padding:0;
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  background:
+    radial-gradient(circle at 20% 80%, rgba(120,119,198,0.3) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255,119,198,0.15) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(120,200,255,0.2) 0%, transparent 50%),
+    linear-gradient(135deg, var(--bg-grad-start), var(--bg-grad-end));
+  min-height:100vh;
+}
+
+/* 页面布局 */
+.page{min-height:100vh;display:block;}
+.container{max-width:860px;margin:0 auto;padding:24px;}
+.brand{margin:0 0 6px 0;font-size:32px;letter-spacing:0.5px;color:#fff;text-shadow:0 2px 4px rgba(0,0,0,0.2)}
+.subtitle{color:rgba(255,255,255,0.9);margin:0 0 8px 0;font-size:15px}
+
+/* 玻璃卡片 */
+.card{
+  background:var(--card);
+  backdrop-filter: blur(20px);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:24px;
+  margin:20px 0;
+  box-shadow: 0 20px 40px var(--shadow), 0 0 0 1px rgba(255,255,255,0.5);
+}
+.label{display:block;margin-bottom:8px;color:var(--muted);font-size:14px;font-weight:500}
+.input{
+  width:100%;
+  padding:14px 16px;
+  border-radius:12px;
+  border:2px solid var(--border);
+  background:rgba(255,255,255,0.8);
+  color:var(--text);outline:none;transition:all .3s ease;
+  font-size:16px;
+}
+.input:focus{border-color:var(--primary);box-shadow:0 0 0 4px rgba(59,130,246,0.1)}
+
+/* 按钮 */
+.btn{
+  display:inline-block;padding:14px 20px;border-radius:12px;
+  border:2px solid var(--border);background:rgba(255,255,255,0.9);
+  color:var(--text);cursor:pointer;transition:all .3s ease;
+  font-weight:500;
+}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(0,0,0,0.15)}
+.btn.primary{
+  background:linear-gradient(135deg, #3b82f6, #1d4ed8);
+  border-color:transparent;color:#fff;
+  box-shadow:0 8px 25px rgba(59,130,246,.4);
+}
+.btn.primary:hover{transform:translateY(-2px);box-shadow:0 12px 35px rgba(59,130,246,.5)}
+.btn:disabled{opacity:.6;cursor:not-allowed;transform:none;box-shadow:none}
+
+/* 进度条 */
+.progress-wrap{display:flex;align-items:center;gap:16px;margin:20px 0}
+.progress-bar{
+  flex:1;height:12px;background:rgba(255,255,255,0.7);
+  border:2px solid var(--border);border-radius:999px;overflow:hidden;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,.1);
+}
+.progress{
+  height:100%;width:0%;
+  background:linear-gradient(90deg,#10b981,#059669);
+  transition:width .4s ease;
+  box-shadow:0 0 10px rgba(16,185,129,0.4);
+}
+.progress-text{width:80px;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums;font-weight:600}
+
+/* 题卡与选项 */
+.question-card .question{font-size:20px;margin:8px 0 20px;line-height:1.6;color:var(--text)}
+.options{display:flex;gap:16px;flex-wrap:wrap}
+.option-btn{
+  padding:16px 20px;border-radius:12px;border:2px solid var(--border);
+  background:rgba(255,255,255,0.9);color:var(--text);cursor:pointer;
+  transition:all .3s ease;font-weight:500;
+}
+.option-btn:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(0,0,0,0.1)}
+.option-btn.selected{
+  border-color:var(--primary);background:var(--primary-weak);
+  box-shadow:0 0 0 4px rgba(59,130,246,0.1);transform:translateY(-2px);
+}
+
+.encourage{color:var(--muted);margin-top:16px;font-style:italic}
+.nav{display:flex;justify-content:space-between;margin-top:20px}
+
+/* 报告区 */
+.result-line{display:flex;gap:12px;align-items:center;margin:16px 0}
+.result-label{color:var(--muted);font-weight:500}
+.result-value{font-weight:700;color:var(--primary);font-size:20px}
+.desc{color:var(--text);opacity:.9;margin:8px 0;line-height:1.6}
+.insight{margin-top:16px;padding:16px;background:rgba(59,130,246,0.05);border-radius:12px;border-left:4px solid var(--primary)}
+
+/* CTA */
+.cta{
+  margin-top:24px;padding:24px;
+  border:2px dashed var(--primary);
+  border-radius:20px;
+  background:linear-gradient(135deg, rgba(59,130,246,0.05), rgba(147,51,234,0.05));
+  box-shadow:0 20px 40px rgba(0,0,0,0.1);
+}
+.cta h3{margin:0 0 12px 0;color:var(--primary);font-size:22px}
+.cta p{color:var(--text);margin-bottom:16px}
+.contact{display:flex;gap:20px;align-items:center;margin-top:16px}
+.qr-placeholder{
+  width:120px;height:120px;border:3px dashed var(--primary);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--primary);border-radius:16px;background:rgba(59,130,246,0.05);
+  font-weight:600;
+}
+.contact-info{color:var(--text)}
+.contact-info p{margin:4px 0}
+
+/* 页面动作 */
+.actions{display:flex;gap:16px;margin-top:20px;flex-wrap:wrap}
+
+/* 云端状态 */
+#cloud-status{font-weight:600}
+
+/* 管理页表格 */
+.admin-grid{display:grid;grid-template-columns:1fr;gap:16px;}
+.filters{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+table{
+  width:100%;border-collapse:collapse;
+  background:var(--card);border:2px solid var(--border);
+  border-radius:16px;overflow:hidden;
+}
+th,td{border-bottom:1px solid var(--border);padding:12px;color:var(--text)}
+th{background:rgba(59,130,246,0.1);text-align:left;font-weight:600}
+.count{color:var(--muted)}
+
+/* 响应式 */
+@media (max-width:768px){
+  .container{padding:16px}
+  .options{flex-direction:column}
+  .brand{font-size:28px}
+  .filters{grid-template-columns:1fr}
+  .contact{flex-direction:column;text-align:center}
+  .qr-placeholder{width:100px;height:100px}
+}
+@media (max-width:420px){
+  .container{padding:12px}
+  .card{padding:20px}
+  .btn,.option-btn{padding:12px 16px}
+}
+
+/* 动画 */
+.page{animation:fadeIn .5s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* 特殊状态颜色 */
+.page-start{background:linear-gradient(135deg, var(--bg-grad-start), var(--bg-grad-end))}

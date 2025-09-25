@@ -1,389 +1,134 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>"明楼"启航加油站 - 职业探索测评</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            color: #333;
-        }
-        
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        .page {
-            display: none;
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            animation: fadeIn 0.5s ease-in;
-        }
-        
-        .page.active {
-            display: block;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        h1 {
-            text-align: center;
-            color: #667eea;
-            margin-bottom: 10px;
-            font-size: 28px;
-        }
-        
-        .subtitle {
-            text-align: center;
-            color: #666;
-            margin-bottom: 30px;
-            font-size: 16px;
-        }
-        
-        .input-group {
-            margin-bottom: 30px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 10px;
-            font-weight: 600;
-            color: #555;
-        }
-        
-        input[type="text"] {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #e1e5e9;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
-        
-        input[type="text"]:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        
-        .btn {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .btn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
-        }
-        
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        .question-card {
-            background: #f8f9fa;
-            padding: 25px;
-            border-radius: 15px;
-            margin-bottom: 25px;
-            border-left: 4px solid #667eea;
-        }
-        
-        .question-text {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            line-height: 1.5;
-        }
-        
-        .options {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-        
-        .option-btn {
-            flex: 1;
-            min-width: 120px;
-            padding: 12px 20px;
-            border: 2px solid #e1e5e9;
-            background: white;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 14px;
-        }
-        
-        .option-btn:hover {
-            border-color: #667eea;
-            background: #f0f4ff;
-        }
-        
-        .option-btn.selected {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
-        }
-        
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: #e1e5e9;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            overflow: hidden;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #667eea, #764ba2);
-            transition: width 0.3s ease;
-        }
-        
-        .progress-text {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #666;
-            font-size: 14px;
-        }
-        
-        .nav-buttons {
-            display: flex;
-            gap: 15px;
-            margin-top: 30px;
-        }
-        
-        .btn-secondary {
-            background: #6c757d;
-        }
-        
-        .btn-secondary:hover {
-            background: #5a6268;
-        }
-        
-        .report-section {
-            margin-bottom: 30px;
-            padding: 25px;
-            background: #f8f9fa;
-            border-radius: 15px;
-        }
-        
-        .report-title {
-            font-size: 20px;
-            font-weight: 700;
-            color: #667eea;
-            margin-bottom: 15px;
-        }
-        
-        .result-code {
-            font-size: 24px;
-            font-weight: 700;
-            color: #333;
-            text-align: center;
-            padding: 20px;
-            background: white;
-            border-radius: 10px;
-            margin: 15px 0;
-            border: 2px solid #667eea;
-        }
-        
-        .insight-text {
-            line-height: 1.6;
-            color: #555;
-            margin-bottom: 20px;
-        }
-        
-        .cta-section {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            border-radius: 15px;
-            text-align: center;
-            margin-top: 30px;
-        }
-        
-        .cta-title {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 15px;
-        }
-        
-        .cta-text {
-            margin-bottom: 20px;
-            opacity: 0.9;
-        }
-        
-        .qr-placeholder {
-            width: 150px;
-            height: 150px;
-            background: white;
-            border-radius: 10px;
-            margin: 20px auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #667eea;
-            font-weight: 600;
-        }
-        
-        .admin-link {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(0,0,0,0.7);
-            color: white;
-            padding: 10px 15px;
-            border-radius: 20px;
-            text-decoration: none;
-            font-size: 12px;
-            opacity: 0.7;
-        }
-        
-        .encourage-text {
-            text-align: center;
-            color: #28a745;
-            font-weight: 600;
-            margin-bottom: 15px;
-            font-size: 14px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>“明楼”启航加油站 - 职业探索问卷</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <!-- 开始页 -->
+  <section id="page-start" class="page">
     <div class="container">
-        <!-- 开始页面 -->
-        <div id="page-start" class="page active">
-            <h1>"明楼"启航加油站</h1>
-            <p class="subtitle">职业探索 · 精准画像 · 专业引导</p>
-            
-            <div class="input-group">
-                <label for="userName">请输入您的姓名或昵称</label>
-                <input type="text" id="userName" placeholder="例如：张三" maxlength="20">
-            </div>
-            
-            <button id="startBtn" class="btn" disabled>开始测评</button>
-            
-            <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 10px; font-size: 14px; color: #666; line-height: 1.5;">
-                <p><strong>测评说明：</strong></p>
-                <p>• 本测评包含霍兰德职业兴趣测试（60题）和MBTI性格测试（100题）</p>
-                <p>• 请根据直觉快速作答，无标准答案</p>
-                <p>• 全程约需10-15分钟</p>
-            </div>
-        </div>
-        
-        <!-- 霍兰德测试页面 -->
-        <div id="page-holland" class="page">
-            <h1>霍兰德职业兴趣测试</h1>
-            <p class="subtitle">第一阶段：职业兴趣探索</p>
-            
-            <div class="progress-bar">
-                <div id="holland-progress" class="progress-fill" style="width: 0%"></div>
-            </div>
-            <div id="holland-progress-text" class="progress-text">1 / 60</div>
-            <div id="holland-encourage" class="encourage-text"></div>
-            
-            <div class="question-card">
-                <div id="holland-question" class="question-text"></div>
-                <div class="options">
-                    <button class="option-btn" data-value="1">是</button>
-                    <button class="option-btn" data-value="0">否</button>
-                </div>
-            </div>
-            
-            <div class="nav-buttons">
-                <button id="holland-prev" class="btn btn-secondary" style="flex: 1;">上一题</button>
-                <button id="holland-next" class="btn" style="flex: 2;" disabled>下一题</button>
-            </div>
-        </div>
-        
-        <!-- MBTI测试页面 -->
-        <div id="page-mbti" class="page">
-            <h1>MBTI性格测试</h1>
-            <p class="subtitle">第二阶段：性格偏好分析</p>
-            
-            <div class="progress-bar">
-                <div id="mbti-progress" class="progress-fill" style="width: 0%"></div>
-            </div>
-            <div id="mbti-progress-text" class="progress-text">1 / 100</div>
-            <div id="mbti-encourage" class="encourage-text"></div>
-            
-            <div class="question-card">
-                <div id="mbti-question" class="question-text"></div>
-                <div class="options">
-                    <button class="option-btn" data-value="A" id="mbti-option-a"></button>
-                    <button class="option-btn" data-value="B" id="mbti-option-b"></button>
-                </div>
-            </div>
-            
-            <div class="nav-buttons">
-                <button id="mbti-prev" class="btn btn-secondary" style="flex: 1;">上一题</button>
-                <button id="mbti-next" class="btn" style="flex: 2;" disabled>下一题</button>
-            </div>
-        </div>
-        
-        <!-- 报告页面 -->
-        <div id="page-report" class="page">
-            <h1>您的测评报告</h1>
-            <p class="subtitle">基于霍兰德 × MBTI 的综合分析</p>
-            
-            <div class="report-section">
-                <div class="report-title">霍兰德职业兴趣代码</div>
-                <div id="holland-result" class="result-code">RIA</div>
-                <div id="holland-desc" class="insight-text"></div>
-            </div>
-            
-            <div class="report-section">
-                <div class="report-title">MBTI性格类型</div>
-                <div id="mbti-result" class="result-code">INFP</div>
-                <div id="mbti-desc" class="insight-text"></div>
-            </div>
-            
-            <div class="report-section">
-                <div class="report-title">协同解读</div>
-                <div id="combined-insight" class="insight-text"></div>
-            </div>
-            
-            <div class="cta-section">
-                <div class="cta-title">机器分析仅是开始</div>
-                <div class="cta-text">真正的宝藏需要共同挖掘。想获得一份专属于你的深度解读报告？</div>
-                <div class="qr-placeholder">扫码联系我们</div>
-                <div style="font-size: 14px; opacity: 0.8;">专业咨询师为您提供一对一深度解读</div>
-            </div>
-        </div>
+      <h1 class="brand">“明楼”启航加油站</h1>
+      <p class="subtitle">职业探索 · 预画像 · 用完即走</p>
+      <p style="margin:6px 0;color:#a9b0b8;">云端状态：<span id="cloud-status">检测中…</span></p>
+      <div class="card">
+        <label for="userName" class="label">请输入姓名或昵称（用于标识报告）</label>
+        <input id="userName" type="text" class="input" placeholder="例如：张三 / 小明" />
+        <button id="startBtn" class="btn primary" disabled>开始测试</button>
+      </div>
+      <div class="tips">
+        <p>本工具用于“前置数据采集与初步画像”，完成后将生成初步报告并引导真人深度解读。</p>
+      </div>
     </div>
-    
-    <a href="admin.html" class="admin-link">管理员入口</a>
-    
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-      // Supabase 初始化（仅使用 anon key）
-      window.supabaseClient = supabase.createClient(
-        'https://axziyvmsdtdcmevcpksd.supabase.co',
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4eml5dm1zZHRkY21ldmNwa3NkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MDYyMjAsImV4cCI6MjA3NDI4MjIyMH0.liuWP6Ouc05-K2GCOali-zMk9TKg6h9_abS1-1_LH8Q'
-      );
-    </script>
-    <script src="app.js?v=20250924"></script>
+  </section>
+
+  <!-- 霍兰德页 -->
+  <section id="page-holland" class="page" style="display:none;">
+    <div class="container">
+      <h2>霍兰德职业兴趣（60题）</h2>
+      <div class="progress-wrap">
+        <div class="progress-bar"><div id="holland-progress" class="progress"></div></div>
+        <div id="holland-progress-text" class="progress-text">1/60</div>
+      </div>
+      <div class="card question-card">
+        <p id="holland-question" class="question">加载中...</p>
+        <div class="options">
+          <button class="option-btn" data-value="1">是 / 同意</button>
+          <button class="option-btn" data-value="0">否 / 不同意</button>
+        </div>
+        <p id="holland-encourage" class="encourage">很好！继续保持！</p>
+      </div>
+      <div class="nav">
+        <button id="holland-prev" class="btn">上一题</button>
+        <button id="holland-next" class="btn primary" disabled>下一题</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- MBTI页 -->
+  <section id="page-mbti" class="page" style="display:none;">
+    <div class="container">
+      <h2>MBTI性格偏好（100题）</h2>
+      <div class="progress-wrap">
+        <div class="progress-bar"><div id="mbti-progress" class="progress"></div></div>
+        <div id="mbti-progress-text" class="progress-text">1/100</div>
+      </div>
+      <div class="card question-card">
+        <p id="mbti-question" class="question">加载中...</p>
+        <div class="options">
+          <button id="mbti-option-a" class="option-btn" data-value="A">选项A</button>
+          <button id="mbti-option-b" class="option-btn" data-value="B">选项B</button>
+        </div>
+        <p id="mbti-encourage" class="encourage">很好！继续保持！</p>
+      </div>
+      <div class="nav">
+        <button id="mbti-prev" class="btn">上一题</button>
+        <button id="mbti-next" class="btn primary" disabled>下一题</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 报告页 -->
+  <section id="page-report" class="page" style="display:none;">
+    <div class="container">
+      <h2>初步综合报告</h2>
+      <div class="card">
+        <div class="result-line">
+          <span class="result-label">霍兰德代码：</span>
+          <span id="holland-result" class="result-value">-</span>
+        </div>
+        <p id="holland-desc" class="desc">-</p>
+        <div class="result-line">
+          <span class="result-label">MBTI类型：</span>
+          <span id="mbti-result" class="result-value">-</span>
+        </div>
+        <p id="mbti-desc" class="desc">-</p>
+        <div class="insight">
+          <p id="combined-insight">-</p>
+        </div>
+      </div>
+
+      <!-- 转化核心：醒目的引导区 -->
+      <div class="cta">
+        <h3>机器分析仅是开始，真正的宝藏需要共同挖掘</h3>
+        <p>想获得一份专属于你的深度解读报告？请联系我们的专业顾问。</p>
+        <div class="contact">
+          <!-- 你可以替换为真实的二维码图片 -->
+          <div class="qr-placeholder">QR</div>
+          <div class="contact-info">
+            <p>客服微信：请扫码或搜索</p>
+            <p>电话：180-0000-0000</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <a class="btn" href="admin.html" target="_blank">管理员数据看板</a>
+        <button class="btn" onclick="location.reload()">重新开始</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Supabase 初始化：统一引用 SDK 与全局配置 -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script>
+    // 显示云端连接状态
+    (function(){
+      const el = document.getElementById('cloud-status');
+      if (!el) return;
+      if (window.supabaseClient) {
+        el.textContent = '已连接';
+        el.style.color = '#16a34a';
+      } else {
+        el.textContent = '离线（使用本地存储）';
+        el.style.color = '#dc2626';
+      }
+    })();
+  </script>
+
+  <script src="app.js"></script>
 </body>
 </html>
