@@ -9,9 +9,11 @@
     .admin-grid{display:grid;grid-template-columns:1fr;gap:12px;}
     .filters{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
     table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--border);}
-    th,td{border-bottom:1px solid var(--border);padding:8px;color:var(--text);}
+    th,td{border-bottom:1px solid var(--border);padding:12px;color:var(--text);}
     th{background:#2d3748;color:#ffffff;text-align:left;font-weight:600;}
     .count{color:var(--muted);}
+    .detail-btn{background:#3b82f6;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500;}
+    .detail-btn:hover{background:#2563eb;}
   </style>
 </head>
 <body>
@@ -58,10 +60,10 @@
             <th>完成时间</th>
             <th>霍兰德代码</th>
             <th>MBTI代码</th>
-            <th>操作</th>
+            <th style="width:100px;">操作</th>
           </tr>
           </thead>
-          <tbody></tbody>
+          <tbody id="table-body"></tbody>
         </table>
       </div>
     </div>
@@ -83,6 +85,8 @@
   <script src="supabase-config.js"></script>
 
   <script>
+    let currentTableData = [];
+
     async function loadData() {
       // 优先从 Supabase 读取
       try {
@@ -137,7 +141,7 @@
     }
 
     function renderTable(rows) {
-      const tbody = document.querySelector('#data-table tbody');
+      const tbody = document.getElementById('table-body');
       tbody.innerHTML = '';
       rows.forEach((r, index) => {
         const tr = document.createElement('tr');
@@ -146,12 +150,12 @@
           <td>${formatTime(r.timestamp)}</td>
           <td>${escapeHtml(r.holland)}</td>
           <td>${escapeHtml(r.mbti)}</td>
-          <td><button onclick="showDetail(${index})" style="padding:6px 12px;font-size:12px;background:#3b82f6;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:500;">查看详情</button></td>
+          <td><button class="detail-btn" onclick="showDetail(${index})">查看详情</button></td>
         `;
         tbody.appendChild(tr);
       });
       // 保存当前数据供详情查看使用
-      window.currentTableData = rows;
+      currentTableData = rows;
       console.log('表格已渲染，行数：', rows.length);
     }
 
@@ -165,7 +169,7 @@
 
     function escapeHtml(s){
       return String(s||'').replace(/[&<>"']/g, m => ({
-        '&':'&','<':'<','>':'>','"':'"',"'":'&#39;'
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
       }[m]));
     }
 
@@ -223,16 +227,14 @@
     });
 
     // 详细得分分析功能
-    let allData = [];
-
-    async function showDetail(index) {
-      const user = window.currentTableData ? window.currentTableData[index] : null;
+    function showDetail(index) {
+      const user = currentTableData[index];
       if (!user) {
         alert('未找到该用户的详细数据');
         return;
       }
 
-      document.getElementById('detail-title').textContent = `${name} - 详细得分分析`;
+      document.getElementById('detail-title').textContent = `${user.name} - 详细得分分析`;
       
       let content = '<div style="line-height:1.6;">';
       
