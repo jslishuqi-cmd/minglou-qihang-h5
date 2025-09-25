@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生成微信二维码</title>
+    <script src="https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        #qrcode { margin: 20px 0; }
+        .btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        .input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>📱 生成微信二维码</h2>
+        <p>请输入你的微信号或微信二维码链接</p>
+        
+        <input type="text" id="wechat-input" class="input" 
+               placeholder="输入微信号，如：wechat_13957206883" 
+               value="weixin://contacts/profile/13957206883">
+        
+        <button class="btn" onclick="generateWechatQR()">生成微信二维码</button>
+        
+        <div id="qrcode"></div>
+        
+        <button class="btn" onclick="downloadQR()" id="download-btn" style="display:none;">
+            下载二维码 (保存为 wechat-qr.png)
+        </button>
+        
+        <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-radius: 8px; text-align: left;">
+            <h4>📋 使用说明：</h4>
+            <p>1. 生成二维码后，点击"下载二维码"</p>
+            <p>2. 将下载的 wechat-qr.png 文件放到项目的 assets/ 文件夹中</p>
+            <p>3. 这样用户扫码就能直接添加你的微信了</p>
+        </div>
+    </div>
+
+    <script>
+        let currentCanvas = null;
+
+        function generateWechatQR() {
+            const wechatInfo = document.getElementById('wechat-input').value.trim();
+            if (!wechatInfo) {
+                alert('请输入微信信息');
+                return;
+            }
+
+            document.getElementById('qrcode').innerHTML = '';
+            document.getElementById('download-btn').style.display = 'none';
+
+            // 如果不是链接格式，转换为微信协议
+            let qrData = wechatInfo;
+            if (!wechatInfo.startsWith('weixin://') && !wechatInfo.startsWith('http')) {
+                qrData = `weixin://contacts/profile/${wechatInfo}`;
+            }
+
+            QRCode.toCanvas(document.getElementById('qrcode'), qrData, {
+                width: 200,
+                height: 200,
+                colorDark: '#000000',
+                colorLight: '#ffffff',
+                margin: 2,
+                errorCorrectionLevel: 'M'
+            }, function (error, canvas) {
+                if (error) {
+                    console.error(error);
+                    // 备用方案：生成包含联系信息的二维码
+                    const fallbackData = `联系微信\n电话：13957206883\n请添加微信咨询`;
+                    QRCode.toCanvas(document.getElementById('qrcode'), fallbackData, {
+                        width: 200,
+                        height: 200,
+                        colorDark: '#000000',
+                        colorLight: '#ffffff',
+                        margin: 2,
+                        errorCorrectionLevel: 'M'
+                    }, function (err, canvas2) {
+                        if (!err) {
+                            currentCanvas = canvas2;
+                            document.getElementById('download-btn').style.display = 'inline-block';
+                        }
+                    });
+                } else {
+                    currentCanvas = canvas;
+                    document.getElementById('download-btn').style.display = 'inline-block';
+                }
+            });
+        }
+
+        function downloadQR() {
+            if (!currentCanvas) {
+                alert('请先生成二维码');
+                return;
+            }
+
+            const link = document.createElement('a');
+            link.download = 'wechat-qr.png';
+            link.href = currentCanvas.toDataURL();
+            link.click();
+        }
+
+        // 页面加载时自动生成
+        window.onload = function() {
+            generateWechatQR();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+{
+  "path": "c:\\Users\\37162\\Desktop\\明楼启航加油站",
+  "desc": "“明楼”启航加油站 · 前端静态站，CloudStudio 端口80预览",
+  "id": "5c9796cb579d48719e2e60fad680a2de",
+  "data": {
+    "spaceKey": "5c9796cb579d48719e2e60fad680a2de",
+    "connections": {
+      "webIDE": "https://5c9796cb579d48719e2e60fad680a2de.ap-singapore.cloudstudio.club",
+      "preview": "https://5c9796cb579d48719e2e60fad680a2de--{port}.ap-singapore.cloudstudio.club",
+      "api": "https://5c9796cb579d48719e2e60fad680a2de--api.ap-singapore.cloudstudio.club",
+      "pty": "https://5c9796cb579d48719e2e60fad680a2de--pty.ap-singapore.cloudstudio.club"
+    }
+  },
+  "config": {
+    "api": "https://5c9796cb579d48719e2e60fad680a2de--api.ap-singapore.cloudstudio.club",
+    "pty": "https://5c9796cb579d48719e2e60fad680a2de--pty.ap-singapore.cloudstudio.club",
+    "region": "ap-shanghai",
+    "spaceKey": "5c9796cb579d48719e2e60fad680a2de"
+  }
+}
