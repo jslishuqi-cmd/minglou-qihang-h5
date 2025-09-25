@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>测试管理后台</title>
+    <style>
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; }
+        th { background-color: #f2f2f2; }
+        button { background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h2>测试表格 - 确认操作列显示</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>姓名</th>
+                <th>时间</th>
+                <th>霍兰德</th>
+                <th>MBTI</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>测试用户</td>
+                <td>2025/9/25 13:00:00</td>
+                <td>RIA</td>
+                <td>INFP</td>
+                <td><button onclick="alert('详情功能正常')">查看详情</button></td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <p>如果你能看到上面表格的"操作"列和蓝色按钮，说明代码没问题。</p>
+    <p>问题可能是线上部署延迟，请等待3-5分钟后再检查正式的管理后台。</p>
+</body>
+</html>
