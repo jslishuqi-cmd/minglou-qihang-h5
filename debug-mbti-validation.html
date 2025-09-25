@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MBTI 答题数据验证工具</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        .error { color: #e74c3c; background: #fdf2f2; padding: 10px; border-radius: 4px; }
+        .success { color: #27ae60; background: #f0f9f0; padding: 10px; border-radius: 4px; }
+        .warning { color: #f39c12; background: #fef9e7; padding: 10px; border-radius: 4px; }
+        button { padding: 10px 20px; margin: 5px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #2980b9; }
+        textarea { width: 100%; height: 200px; margin: 10px 0; }
+        .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 15px 0; }
+        .stat-card { padding: 15px; background: #f8f9fa; border-radius: 8px; text-align: center; }
+        .dimension-detail { margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 MBTI 答题数据验证工具</h1>
+        
+        <div class="section">
+            <h3>📊 从 Supabase 加载数据</h3>
+            <button onclick="loadFromSupabase()">加载云端数据</button>
+            <div id="supabase-status"></div>
+        </div>
+
+        <div class="section">
+            <h3>📝 手动输入答题数据</h3>
+            <p>请粘贴 MBTI 答题数组（JSON 格式）：</p>
+            <textarea id="manual-input" placeholder='例如：["A","B","A","B",...]'></textarea>
+            <button onclick="validateManualInput()">验证数据</button>
+        </div>
+
+        <div class="section">
+            <h3>🧪 生成完整测试数据</h3>
+            <button onclick="generateFullTestData()">生成 100 题完整数据</button>
+            <button onclick="generateIncompleteData()">生成不完整数据（模拟问题）</button>
+        </div>
+
+        <div class="section" id="validation-results" style="display: none;">
+            <h3>✅ 验证结果</h3>
+            <div id="validation-content"></div>
+        </div>
+
+        <div class="section" id="dimension-analysis" style="display: none;">
+            <h3>📈 维度分析</h3>
+            <div id="dimension-content"></div>
+        </div>
+    </div>
+
+    <!-- Supabase 初始化 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+
+    <script>
+        function validateMBTIData(answers) {
+            const results = {
+                isValid: true,
+                totalAnswers: answers ? answers.length : 0,
+                validAnswers: 0,
+                invalidAnswers: [],
+                dimensionCounts: { EI: 0, SN: 0, TF: 0, JP: 0 },
+                scores: { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 },
+                issues: []
+            };
+
+            if (!answers || !Array.isArray(answers)) {
+                results.isValid = false;
+                results.issues.push('答题数据不是有效数组');
+                return results;
+            }
+
+            if (answers.length !== 100) {
+                results.isValid = false;
+                results.issues.push(`答题数量不正确：期望 100 题，实际 ${answers.length} 题`);
+            }
+
+            answers.forEach((answer, index) => {
+                if (!answer || (answer !== 'A' && answer !== 'B')) {
+                    results.invalidAnswers.push({ 
+                        questionNumber: index + 1, 
+                        answer: answer,
+                        expected: 'A 或 B'
+                    });
+                    return;
+                }
+
+                results.validAnswers++;
+
+                // 按维度分类统计
+                if (index < 25) {
+                    // 第1-25题：E vs I
+                    results.dimensionCounts.EI++;
+                    if (answer === 'A') results.scores.E++;
+                    else results.scores.I++;
+                } else if (index < 50) {
+                    // 第26-50题：S vs N
+                    results.dimensionCounts.SN++;
+                    if (answer === 'A') results.scores.S++;
+                    else results.scores.N++;
+                } else if (index < 75) {
+                    // 第51-75题：T vs F
+                    results.dimensionCounts.TF++;
+                    if (answer === 'A') results.scores.T++;
+                    else results.scores.F++;
+                } else if (index < 100) {
+                    // 第76-100题：J vs P
+                    results.dimensionCounts.JP++;
+                    if (answer === 'A') results.scores.J++;
+                    else results.scores.P++;
+                }
+            });
+
+            // 检查每个维度是否有 25 题
+            Object.entries(results.dimensionCounts).forEach(([dimension, count]) => {
+                if (count !== 25) {
+                    results.isValid = false;
+                    results.issues.push(`${dimension} 维度题目数不正确：期望 25 题，实际 ${count} 题`);
+                }
+            });
+
+            if (results.invalidAnswers.length > 0) {
+                results.isValid = false;
+                results.issues.push(`发现 ${results.invalidAnswers.length} 个无效答案`);
+            }
+
+            return results;
+        }
+
+        function displayValidationResults(results) {
+            const container = document.getElementById('validation-content');
+            const dimensionContainer = document.getElementById('dimension-content');
+            
+            let html = '';
+            
+            // 总体状态
+            if (results.isValid) {
+                html += '<div class="success">✅ 数据验证通过！所有 100 题答题完整且有效。</div>';
+            } else {
+                html += '<div class="error">❌ 数据验证失败！发现以下问题：</div>';
+                html += '<ul>';
+                results.issues.forEach(issue => {
+                    html += `<li>${issue}</li>`;
+                });
+                html += '</ul>';
+            }
+
+            // 统计信息
+            html += '<div class="stats">';
+            html += `<div class="stat-card"><strong>${results.totalAnswers}</strong><br>总题数</div>`;
+            html += `<div class="stat-card"><strong>${results.validAnswers}</strong><br>有效答案</div>`;
+            html += `<div class="stat-card"><strong>${results.invalidAnswers.length}</strong><br>无效答案</div>`;
+            html += `<div class="stat-card"><strong>${results.isValid ? '通过' : '失败'}</strong><br>验证状态</div>`;
+            html += '</div>';
+
+            // 无效答案详情
+            if (results.invalidAnswers.length > 0) {
+                html += '<div class="warning"><strong>无效答案详情：</strong><br>';
+                results.invalidAnswers.slice(0, 10).forEach(invalid => {
+                    html += `第 ${invalid.questionNumber} 题：答案 "${invalid.answer}"，期望 "${invalid.expected}"<br>`;
+                });
+                if (results.invalidAnswers.length > 10) {
+                    html += `... 还有 ${results.invalidAnswers.length - 10} 个无效答案`;
+                }
+                html += '</div>';
+            }
+
+            container.innerHTML = html;
+            document.getElementById('validation-results').style.display = 'block';
+
+            // 维度分析
+            let dimensionHtml = '<div class="stats">';
+            Object.entries(results.dimensionCounts).forEach(([dimension, count]) => {
+                const isCorrect = count === 25;
+                const cardClass = isCorrect ? 'success' : 'error';
+                dimensionHtml += `<div class="stat-card" style="background: ${isCorrect ? '#f0f9f0' : '#fdf2f2'};">`;
+                dimensionHtml += `<strong>${dimension}</strong><br>${count}/25 题<br>`;
+                dimensionHtml += `${isCorrect ? '✅' : '❌'}`;
+                dimensionHtml += '</div>';
+            });
+            dimensionHtml += '</div>';
+
+            // 得分分布
+            dimensionHtml += '<h4>得分分布：</h4>';
+            const dimensions = [
+                { name: '外向(E) vs 内向(I)', left: 'E', right: 'I' },
+                { name: '感觉(S) vs 直觉(N)', left: 'S', right: 'N' },
+                { name: '思考(T) vs 情感(F)', left: 'T', right: 'F' },
+                { name: '判断(J) vs 知觉(P)', left: 'J', right: 'P' }
+            ];
+
+            dimensions.forEach(dim => {
+                const leftScore = results.scores[dim.left] || 0;
+                const rightScore = results.scores[dim.right] || 0;
+                const total = leftScore + rightScore;
+                
+                dimensionHtml += '<div class="dimension-detail">';
+                dimensionHtml += `<strong>${dim.name}</strong><br>`;
+                dimensionHtml += `${dim.left}: ${leftScore} 题，${dim.right}: ${rightScore} 题，总计: ${total} 题`;
+                if (total !== 25) {
+                    dimensionHtml += ` <span style="color: #e74c3c;">⚠️ 应为 25 题</span>`;
+                }
+                dimensionHtml += '</div>';
+            });
+
+            dimensionContainer.innerHTML = dimensionHtml;
+            document.getElementById('dimension-analysis').style.display = 'block';
+        }
+
+        async function loadFromSupabase() {
+            const statusDiv = document.getElementById('supabase-status');
+            
+            try {
+                if (!window.supabaseClient) {
+                    statusDiv.innerHTML = '<div class="error">Supabase 未初始化</div>';
+                    return;
+                }
+
+                statusDiv.innerHTML = '<div class="warning">正在加载数据...</div>';
+
+                const { data, error } = await window.supabaseClient
+                    .from('test_results')
+                    .select('name, mbti_answers, timestamp')
+                    .order('timestamp', { ascending: false })
+                    .limit(10);
+
+                if (error) throw error;
+
+                if (data.length === 0) {
+                    statusDiv.innerHTML = '<div class="warning">未找到测试数据</div>';
+                    return;
+                }
+
+                let html = '<div class="success">成功加载数据</div>';
+                html += '<h4>最近 10 条记录：</h4>';
+                
+                data.forEach((record, index) => {
+                    const answers = record.mbti_answers || [];
+                    const results = validateMBTIData(answers);
+                    const statusIcon = results.isValid ? '✅' : '❌';
+                    
+                    html += `<div style="margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 4px;">`;
+                    html += `<strong>${record.name}</strong> ${statusIcon} `;
+                    html += `(${answers.length} 题, ${results.validAnswers} 有效)`;
+                    html += ` <button onclick="validateSpecificRecord(${index}, '${record.name}', ${JSON.stringify(answers).replace(/"/g, '&quot;')})">详细分析</button>`;
+                    html += '</div>';
+                });
+
+                statusDiv.innerHTML = html;
+
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="error">加载失败：${error.message}</div>`;
+            }
+        }
+
+        function validateSpecificRecord(index, name, answers) {
+            const results = validateMBTIData(answers);
+            displayValidationResults(results);
+            
+            // 更新标题
+            document.getElementById('validation-results').querySelector('h3').textContent = `✅ ${name} 的验证结果`;
+        }
+
+        function validateManualInput() {
+            const input = document.getElementById('manual-input').value.trim();
+            
+            try {
+                const answers = JSON.parse(input);
+                const results = validateMBTIData(answers);
+                displayValidationResults(results);
+            } catch (error) {
+                document.getElementById('validation-content').innerHTML = 
+                    `<div class="error">JSON 解析失败：${error.message}</div>`;
+                document.getElementById('validation-results').style.display = 'block';
+            }
+        }
+
+        function generateFullTestData() {
+            // 生成完整的 100 题数据
+            const answers = [];
+            for (let i = 0; i < 100; i++) {
+                answers.push(Math.random() > 0.5 ? 'A' : 'B');
+            }
+            
+            document.getElementById('manual-input').value = JSON.stringify(answers);
+            
+            const results = validateMBTIData(answers);
+            displayValidationResults(results);
+        }
+
+        function generateIncompleteData() {
+            // 生成不完整数据来模拟问题
+            const answers = [];
+            
+            // EI 维度：只有 24 题
+            for (let i = 0; i < 24; i++) {
+                answers.push(Math.random() > 0.5 ? 'A' : 'B');
+            }
+            
+            // SN 维度：25 题
+            for (let i = 0; i < 25; i++) {
+                answers.push(Math.random() > 0.5 ? 'A' : 'B');
+            }
+            
+            // TF 维度：25 题
+            for (let i = 0; i < 25; i++) {
+                answers.push(Math.random() > 0.5 ? 'A' : 'B');
+            }
+            
+            // JP 维度：只有 21 题
+            for (let i = 0; i < 21; i++) {
+                answers.push(Math.random() > 0.5 ? 'A' : 'B');
+            }
+            
+            // 添加一些无效答案
+            answers[10] = null;
+            answers[30] = '';
+            answers[50] = 'C';
+            
+            document.getElementById('manual-input').value = JSON.stringify(answers);
+            
+            const results = validateMBTIData(answers);
+            displayValidationResults(results);
+        }
+
+        // 页面加载时检查 Supabase 状态
+        window.addEventListener('load', () => {
+            const statusDiv = document.getElementById('supabase-status');
+            if (window.supabaseClient) {
+                statusDiv.innerHTML = '<div class="success">Supabase 已连接，可以加载数据</div>';
+            } else {
+                statusDiv.innerHTML = '<div class="error">Supabase 未连接</div>';
+            }
+        });
+    </script>
+</body>
+</html>

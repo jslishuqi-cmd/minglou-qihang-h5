@@ -369,7 +369,12 @@
         return scores;
       }
       
-      console.log('MBTI答题数据长度:', answers.length, '前10个答案:', answers.slice(0, 10));
+      console.log('MBTI答题数据长度:', answers.length);
+      console.log('MBTI答题数据详情:', answers);
+      
+      // 统计每个维度的有效答题数
+      const dimensionCounts = { EI: 0, SN: 0, TF: 0, JP: 0 };
+      const invalidAnswers = [];
       
       // MBTI 100题分为4个维度，每个维度25题
       // 第1-25题：E vs I (外向 vs 内向) - A选项=E，B选项=I
@@ -379,11 +384,13 @@
       
       answers.forEach((answer, index) => {
         if (!answer || (answer !== 'A' && answer !== 'B')) {
-        return; // 跳过无效答案
-      }
+          invalidAnswers.push({ index: index + 1, answer });
+          return; // 跳过无效答案
+        }
         
         if (index < 25) {
           // 第1-25题：E vs I
+          dimensionCounts.EI++;
           if (answer === 'A') {
             scores.E++;
           } else if (answer === 'B') {
@@ -391,6 +398,7 @@
           }
         } else if (index < 50) {
           // 第26-50题：S vs N
+          dimensionCounts.SN++;
           if (answer === 'A') {
             scores.S++;
           } else if (answer === 'B') {
@@ -398,6 +406,7 @@
           }
         } else if (index < 75) {
           // 第51-75题：T vs F
+          dimensionCounts.TF++;
           if (answer === 'A') {
             scores.T++;
           } else if (answer === 'B') {
@@ -405,6 +414,7 @@
           }
         } else if (index < 100) {
           // 第76-100题：J vs P
+          dimensionCounts.JP++;
           if (answer === 'A') {
             scores.J++;
           } else if (answer === 'B') {
@@ -412,6 +422,10 @@
           }
         }
       });
+      
+      console.log('各维度有效答题数:', dimensionCounts);
+      console.log('无效答案:', invalidAnswers);
+      console.log('MBTI计算结果:', scores);
       
       return scores;
     }

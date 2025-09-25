@@ -371,6 +371,17 @@ function calculateMBTIResult() {
 
 // 生成报告
 function generateReport() {
+    // 验证答题完整性
+    const hollandIncomplete = appState.hollandAnswers.filter(a => a === null).length;
+    const mbtiIncomplete = appState.mbtiAnswers.filter(a => a === null).length;
+    
+    if (hollandIncomplete > 0 || mbtiIncomplete > 0) {
+        alert(`测试未完成！霍兰德测试还有 ${hollandIncomplete} 题未答，MBTI测试还有 ${mbtiIncomplete} 题未答。请完成所有题目后再提交。`);
+        return;
+    }
+    
+    console.log('答题验证通过 - 霍兰德:', appState.hollandAnswers.length, '题，MBTI:', appState.mbtiAnswers.length, '题');
+    
     const hollandCode = calculateHollandResult();
     const mbtiType = calculateMBTIResult();
     
@@ -545,6 +556,7 @@ function initializeEvents() {
             appState.mbtiIndex++;
             updateMBTIQuestion();
         } else {
+            // 最后一题，生成报告前验证完整性
             generateReport();
             showPage('report');
         }
@@ -568,6 +580,7 @@ function initializeEvents() {
                     appState.mbtiIndex++;
                     updateMBTIQuestion();
                 } else {
+                    // 最后一题，生成报告前验证完整性
                     generateReport();
                     showPage('report');
                 }
