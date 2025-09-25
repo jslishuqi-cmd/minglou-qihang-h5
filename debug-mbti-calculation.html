@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>MBTI 计分调试工具</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 20px; max-width: 1000px; margin: 0 auto; }
+    .debug-section { background: #f8fafc; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #3b82f6; }
+    .error { border-left-color: #ef4444; background: #fef2f2; }
+    .success { border-left-color: #10b981; background: #f0fdf4; }
+    .warning { border-left-color: #f59e0b; background: #fffbeb; }
+    pre { background: #1e293b; color: #e2e8f0; padding: 15px; border-radius: 6px; overflow-x: auto; }
+    button { background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; margin: 5px; }
+    button:hover { background: #2563eb; }
+    .score-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin: 15px 0; }
+    .score-card { background: white; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; text-align: center; }
+    .score-bar { background: #e2e8f0; height: 8px; border-radius: 4px; margin: 8px 0; overflow: hidden; }
+    .score-fill { background: #3b82f6; height: 100%; transition: width 0.3s ease; }
+  </style>
+</head>
+<body>
+  <h1>🔍 MBTI 计分调试工具</h1>
+  
+  <div class="debug-section">
+    <h3>📊 问题诊断</h3>
+    <p>当前发现的问题：MBTI 各维度得分相加不等于 25 题</p>
+    <ul>
+      <li>E: 24题 + I: 0题 = 24题 ≠ 25题</li>
+      <li>S: 24题 + N: 0题 = 24题 ≠ 25题</li>
+      <li>T: 24题 + F: 0题 = 24题 ≠ 25题</li>
+      <li>J: 20题 + P: 1题 = 21题 ≠ 25题</li>
+    </ul>
+  </div>
+
+  <div class="debug-section">
+    <h3>🛠️ 测试工具</h3>
+    <button onclick="testLocalStorage()">检查本地存储数据</button>
+    <button onclick="testSupabaseData()">检查 Supabase 数据</button>
+    <button onclick="testCalculation()">测试计算逻辑</button>
+    <button onclick="generateTestData()">生成测试数据</button>
+  </div>
+
+  <div id="results"></div>
+
+  <script>
+    // 引入 Supabase（如果可用）
+    if (typeof supabase !== 'undefined') {
+      const SUPABASE_URL = 'https://axziyvmsdtdcmevcpksd.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4eml5dm1zZHRkY21ldmNwa3NkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MDYyMjAsImV4cCI6MjA3NDI4MjIyMH0.liuWP6Ouc05-K2GCOali-zMk9TKg6h9_abS1-1_LH8Q';
+      window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+
+    function log(message, type = 'info') {
+      const results = document.getElementById('results');
+      const div = document.createElement('div');
+      div.className = `debug-section ${type}`;
+      div.innerHTML = `<pre>${JSON.stringify(message, null, 2)}</pre>`;
+      results.appendChild(div);
+    }
+
+    function calculateMBTIScores(answers) {
+      const scores = { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
+      
+      if (!answers || !Array.isArray(answers)) {
+        log(`MBTI答题数据无效: ${answers}`, 'error');
+        return scores;
+      }
+      
+      log(`MBTI答题数据长度: ${answers.length}`, 'info');
+      log(`前20个答案: ${JSON.stringify(answers.slice(0, 20))}`, 'info');
+      
+      const validAnswers = answers.filter(a => a === 'A' || a === 'B');
+      log(`有效答案数量: ${validAnswers.length}`, validAnswers.length === 100 ? 'success' : 'warning');
+      
+      answers.forEach((answer, index) => {
+        if (!answer || (answer !== 'A' && answer !== 'B')) {
+          return;
+        }
+        
+        if (index < 25) {
+          scores[answer === 'A' ? 'E' : 'I']++;
+        } else if (index < 50) {
+          scores[answer === 'A' ? 'S' : 'N']++;
+        } else if (index < 75) {
+          scores[answer === 'A' ? 'T' : 'F']++;
+        } else if (index < 100) {
+          scores[answer === 'A' ? 'J' : 'P']++;
+        }
+      });
+      
+      return scores;
+    }
+
+    function displayScores(scores, title) {
+      const results = document.getElementById('results');
+      const div = document.createElement('div');
+      div.className = 'debug-section';
+      
+      const dimensions = [
+        { left: 'E', right: 'I', name: '外向 vs 内向' },
+        { left: 'S', right: 'N', name: '感觉 vs 直觉' },
+        { left: 'T', right: 'F', name: '思考 vs 情感' },
+        { left: 'J', right: 'P', name: '判断 vs 知觉' }
+      ];
+      
+      let html = `<h3>${title}</h3><div class="score-grid">`;
+      
+      dimensions.forEach(dim => {
+        const leftScore = scores[dim.left] || 0;
+        const rightScore = scores[dim.right] || 0;
+        const total = leftScore + rightScore;
+        const leftPercent = total > 0 ? Math.round((leftScore / total) * 100) : 50;
+        
+        html += `
+          <div class="score-card">
+            <h4>${dim.name}</h4>
+            <div>${dim.left}: ${leftScore}题 | ${dim.right}: ${rightScore}题</div>
+            <div>总计: ${total}题</div>
+            <div class="score-bar">
+              <div class="score-fill" style="width: ${leftPercent}%"></div>
+            </div>
+            <div style="color: ${total === 25 ? '#10b981' : '#ef4444'};">
+              ${total === 25 ? '✅ 正确' : '❌ 异常'}
+            </div>
+          </div>
+        `;
+      });
+      
+      html += '</div>';
+      div.innerHTML = html;
+      results.appendChild(div);
+    }
+
+    async function testLocalStorage() {
+      log('🔍 检查本地存储数据...', 'info');
+      try {
+        const data = JSON.parse(localStorage.getItem('testResults') || '[]');
+        log(`本地存储记录数: ${data.length}`, 'info');
+        
+        if (data.length > 0) {
+          const latest = data[data.length - 1];
+          log('最新记录:', 'info');
+          log(latest, 'info');
+          
+          // 检查字段名
+          const mbtiAnswers = latest.mbti_answers || latest.mbtiAnswers;
+          if (mbtiAnswers) {
+            const scores = calculateMBTIScores(mbtiAnswers);
+            displayScores(scores, '本地存储数据计算结果');
+          } else {
+            log('未找到 MBTI 答题数据', 'error');
+          }
+        }
+      } catch (e) {
+        log(`本地存储读取失败: ${e.message}`, 'error');
+      }
+    }
+
+    async function testSupabaseData() {
+      log('🔍 检查 Supabase 数据...', 'info');
+      try {
+        if (!window.supabaseClient) {
+          log('Supabase 客户端未初始化', 'error');
+          return;
+        }
+        
+        const { data, error } = await window.supabaseClient
+          .from('test_results')
+          .select('name,mbti_answers')
+          .order('timestamp', { ascending: false })
+          .limit(1);
+          
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+          const latest = data[0];
+          log('Supabase 最新记录:', 'info');
+          log(latest, 'info');
+          
+          if (latest.mbti_answers) {
+            const scores = calculateMBTIScores(latest.mbti_answers);
+            displayScores(scores, 'Supabase 数据计算结果');
+          } else {
+            log('未找到 MBTI 答题数据', 'error');
+          }
+        } else {
+          log('Supabase 中无数据', 'warning');
+        }
+      } catch (e) {
+        log(`Supabase 读取失败: ${e.message}`, 'error');
+      }
+    }
+
+    function testCalculation() {
+      log('🧮 测试计算逻辑...', 'info');
+      
+      // 生成完整的测试数据
+      const testAnswers = [];
+      for (let i = 0; i < 100; i++) {
+        testAnswers.push(Math.random() > 0.5 ? 'A' : 'B');
+      }
+      
+      log('生成的测试数据:', 'info');
+      log(`长度: ${testAnswers.length}`, 'info');
+      
+      const scores = calculateMBTIScores(testAnswers);
+      displayScores(scores, '测试数据计算结果');
+    }
+
+    function generateTestData() {
+      log('📝 生成标准测试数据...', 'info');
+      
+      // 生成标准分布的测试数据
+      const testAnswers = [];
+      
+      // E vs I: 15 vs 10
+      for (let i = 0; i < 25; i++) {
+        testAnswers.push(i < 15 ? 'A' : 'B');
+      }
+      
+      // S vs N: 12 vs 13
+      for (let i = 0; i < 25; i++) {
+        testAnswers.push(i < 12 ? 'A' : 'B');
+      }
+      
+      // T vs F: 18 vs 7
+      for (let i = 0; i < 25; i++) {
+        testAnswers.push(i < 18 ? 'A' : 'B');
+      }
+      
+      // J vs P: 20 vs 5
+      for (let i = 0; i < 25; i++) {
+        testAnswers.push(i < 20 ? 'A' : 'B');
+      }
+      
+      log('标准测试数据生成完成:', 'success');
+      log(`总长度: ${testAnswers.length}`, 'info');
+      
+      const scores = calculateMBTIScores(testAnswers);
+      displayScores(scores, '标准测试数据计算结果');
+      
+      // 保存到本地存储用于测试
+      const testResult = {
+        name: '测试用户',
+        holland: 'ESI',
+        mbti: 'ESTJ',
+        timestamp: new Date().toISOString(),
+        holland_answers: new Array(60).fill('A'),
+        mbti_answers: testAnswers
+      };
+      
+      try {
+        const existing = JSON.parse(localStorage.getItem('testResults') || '[]');
+        existing.push(testResult);
+        localStorage.setItem('testResults', JSON.stringify(existing));
+        log('测试数据已保存到本地存储', 'success');
+      } catch (e) {
+        log(`保存失败: ${e.message}`, 'error');
+      }
+    }
+
+    // 页面加载时自动检查
+    window.addEventListener('load', () => {
+      log('🚀 MBTI 计分调试工具已启动', 'success');
+      log('请点击上方按钮开始调试', 'info');
+    });
+  </script>
+
+  <!-- 尝试加载 Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="console.log('Supabase SDK 加载失败')"></script>
+</body>
+</html>

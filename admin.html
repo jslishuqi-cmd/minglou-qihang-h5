@@ -31,7 +31,7 @@
     
     <div class="container" id="admin-panel" style="display:none;">
       <h2>管理员数据看板</h2>
-      <p class="count">数据源优先：Supabase（若已初始化）；否则读取本地备份</p>
+      <p class="count">数据源：Supabase 云端数据库</p>
 
       <div class="card">
         <div class="filters">
@@ -97,7 +97,6 @@
 
   <script>
     async function loadData() {
-      // 优先从 Supabase 读取
       try {
         if (window.supabaseClient) {
           const { data, error } = await window.supabaseClient
@@ -114,24 +113,14 @@
             holland_answers: row.holland_answers || [],
             mbti_answers: row.mbti_answers || []
           }));
+        } else {
+          console.error('Supabase 未初始化');
+          alert('云端服务未连接，请刷新页面重试');
+          return [];
         }
       } catch (e) {
-        console.error('Supabase 读取失败，改用本地：', e);
-      }
-
-      // 退回本地存储备份
-      try {
-        const local = JSON.parse(localStorage.getItem('testResults') || '[]');
-        console.log('从本地读取成功，条数：', local.length);
-        return local.map(x => ({
-          name: x.name || '',
-          timestamp: x.timestamp || '',
-          holland: x.holland || '',
-          mbti: x.mbti || '',
-          holland_answers: x.holland_answers || x.hollandAnswers || [],
-          mbti_answers: x.mbti_answers || x.mbtiAnswers || []
-        })).reverse();
-      } catch (_) {
+        console.error('Supabase 读取失败：', e);
+        alert('数据加载失败：' + e.message);
         return [];
       }
     }
@@ -440,7 +429,6 @@
       }
       
       try {
-        // 从 Supabase 删除
         if (window.supabaseClient) {
           const { error } = await window.supabaseClient
             .from('test_results')
@@ -450,17 +438,11 @@
           
           if (error) throw error;
           console.log('从 Supabase 删除成功');
+          alert('删除成功！');
+          refresh();
+        } else {
+          alert('云端服务未连接，无法删除');
         }
-        
-        // 从本地存储删除
-        const localData = JSON.parse(localStorage.getItem('testResults') || '[]');
-        const filteredData = localData.filter(item => 
-          !(item.name === user.name && item.timestamp === user.timestamp)
-        );
-        localStorage.setItem('testResults', JSON.stringify(filteredData));
-        
-        alert('删除成功！');
-        refresh();
       } catch (error) {
         console.error('删除失败：', error);
         alert('删除失败：' + error.message);
@@ -484,7 +466,6 @@
           timestamp: cb.dataset.timestamp
         }));
         
-        // 从 Supabase 批量删除
         if (window.supabaseClient) {
           for (const record of recordsToDelete) {
             const { error } = await window.supabaseClient
@@ -496,19 +477,11 @@
             if (error) throw error;
           }
           console.log('从 Supabase 批量删除成功');
+          alert(`成功删除 ${recordsToDelete.length} 条记录！`);
+          refresh();
+        } else {
+          alert('云端服务未连接，无法删除');
         }
-        
-        // 从本地存储批量删除
-        const localData = JSON.parse(localStorage.getItem('testResults') || '[]');
-        const filteredData = localData.filter(item => 
-          !recordsToDelete.some(record => 
-            item.name === record.name && item.timestamp === record.timestamp
-          )
-        );
-        localStorage.setItem('testResults', JSON.stringify(filteredData));
-        
-        alert(`成功删除 ${recordsToDelete.length} 条记录！`);
-        refresh();
       } catch (error) {
         console.error('批量删除失败：', error);
         alert('批量删除失败：' + error.message);

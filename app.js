@@ -427,7 +427,7 @@ function getCombinedInsight(holland, mbti) {
     return `您的 ${holland} × ${mbti} 组合显示出独特的职业潜能。${holland} 的兴趣倾向与 ${mbti} 的性格特质相互作用，形成了您独特的工作风格和价值追求。这种组合在某些领域可能展现出卓越的天赋，但也可能在其他方面存在挑战。机器分析仅是开始，真正的宝藏需要共同挖掘。想获得一份专属于你的深度解读报告？请联系我们的专业顾问。`;
 }
 
-// 保存结果到本地存储（防重复提交）
+// 保存结果到 Supabase 云端存储（防重复提交）
 let isSubmitting = false;
 async function saveResult(holland, mbti) {
     if (isSubmitting) {
@@ -435,6 +435,7 @@ async function saveResult(holland, mbti) {
         return;
     }
     isSubmitting = true;
+    
     const result = {
         name: appState.userName,
         holland: holland,
@@ -444,21 +445,6 @@ async function saveResult(holland, mbti) {
         mbti_answers: appState.mbtiAnswers
     };
 
-    // 本地备份（避免网络失败丢失）
-    try {
-        const existingResults = JSON.parse(localStorage.getItem('testResults') || '[]');
-        existingResults.push({
-            name: result.name,
-            holland: result.holland,
-            mbti: result.mbti,
-            timestamp: result.timestamp,
-            holland_answers: appState.hollandAnswers,
-            mbti_answers: appState.mbtiAnswers
-        });
-        localStorage.setItem('testResults', JSON.stringify(existingResults));
-    } catch (_) {}
-
-    // 写入 Supabase
     try {
         if (window.supabaseClient) {
             const { data, error } = await window.supabaseClient
@@ -469,15 +455,15 @@ async function saveResult(holland, mbti) {
                 alert('提交失败：' + (error.message || '未知错误'));
             } else {
                 console.log('Supabase 提交成功:', data);
-                alert('已提交到云端');
+                alert('测试结果已成功保存到云端！');
             }
         } else {
-            console.warn('Supabase 未初始化，已仅保存到本地');
-            alert('已本地保存，云端未连接：请稍后重试或联系管理员');
+            console.error('Supabase 未初始化');
+            alert('云端服务未连接，请刷新页面重试或联系管理员');
         }
     } catch (e) {
         console.error('网络异常，Supabase 写入失败:', e);
-        alert('提交失败：网络异常，请稍后重试');
+        alert('提交失败：网络异常，请检查网络连接后重试');
     } finally {
         isSubmitting = false;
     }
