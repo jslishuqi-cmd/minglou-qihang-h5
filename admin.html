@@ -139,17 +139,19 @@
     function renderTable(rows) {
       const tbody = document.querySelector('#data-table tbody');
       tbody.innerHTML = '';
-      rows.forEach(r => {
+      rows.forEach((r, index) => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${escapeHtml(r.name)}</td>
           <td>${formatTime(r.timestamp)}</td>
           <td>${escapeHtml(r.holland)}</td>
           <td>${escapeHtml(r.mbti)}</td>
-          <td><button onclick="showDetail('${escapeHtml(r.name)}', '${r.timestamp}')" class="btn" style="padding:4px 8px;font-size:12px;">查看详情</button></td>
+          <td><button onclick="showDetail(${index})" class="btn" style="padding:4px 8px;font-size:12px;background:#3b82f6;color:white;border:none;border-radius:4px;cursor:pointer;">查看详情</button></td>
         `;
         tbody.appendChild(tr);
       });
+      // 保存当前数据供详情查看使用
+      window.currentTableData = rows;
     }
 
     function formatTime(ts) {
@@ -222,12 +224,8 @@
     // 详细得分分析功能
     let allData = [];
 
-    async function showDetail(name, timestamp) {
-      if (allData.length === 0) {
-        allData = await loadData();
-      }
-      
-      const user = allData.find(u => u.name === name && u.timestamp === timestamp);
+    async function showDetail(index) {
+      const user = window.currentTableData ? window.currentTableData[index] : null;
       if (!user) {
         alert('未找到该用户的详细数据');
         return;
