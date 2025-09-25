@@ -146,12 +146,13 @@
           <td>${formatTime(r.timestamp)}</td>
           <td>${escapeHtml(r.holland)}</td>
           <td>${escapeHtml(r.mbti)}</td>
-          <td><button onclick="showDetail(${index})" class="btn" style="padding:4px 8px;font-size:12px;background:#3b82f6;color:white;border:none;border-radius:4px;cursor:pointer;">查看详情</button></td>
+          <td><button onclick="showDetail(${index})" style="padding:6px 12px;font-size:12px;background:#3b82f6;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:500;">查看详情</button></td>
         `;
         tbody.appendChild(tr);
       });
       // 保存当前数据供详情查看使用
       window.currentTableData = rows;
+      console.log('表格已渲染，行数：', rows.length);
     }
 
     function formatTime(ts) {
