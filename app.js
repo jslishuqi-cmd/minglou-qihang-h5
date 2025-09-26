@@ -339,24 +339,49 @@ function calculateHollandResult() {
     return sorted.slice(0, 3).map(item => item[0]).join('');
 }
 
-// 计算MBTI结果
+// 计算MBTI结果 - 严格按照25题一个维度
 function calculateMBTIResult() {
     const scores = {E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0};
     
+    console.log('开始计算MBTI结果，答案总数:', appState.mbtiAnswers.length);
+    
+    // 严格按照题目位置计算，不依赖dimension字段
     appState.mbtiAnswers.forEach((answer, index) => {
-        const question = mbtiQuestions[index];
-        const dimension = question.dimension;
-        
-        if (answer === 'A') {
-            if (dimension === 'EI') scores.E++;
-            else if (dimension === 'SN') scores.S++;
-            else if (dimension === 'TF') scores.T++;
-            else if (dimension === 'JP') scores.J++;
-        } else if (answer === 'B') {
-            if (dimension === 'EI') scores.I++;
-            else if (dimension === 'SN') scores.N++;
-            else if (dimension === 'TF') scores.F++;
-            else if (dimension === 'JP') scores.P++;
+        if (answer === 'A' || answer === 'B') {
+            if (index < 25) {
+                // 第1-25题：E vs I
+                if (answer === 'A') scores.E++;
+                else scores.I++;
+            } else if (index < 50) {
+                // 第26-50题：S vs N
+                if (answer === 'A') scores.S++;
+                else scores.N++;
+            } else if (index < 75) {
+                // 第51-75题：T vs F
+                if (answer === 'A') scores.T++;
+                else scores.F++;
+            } else if (index < 100) {
+                // 第76-100题：J vs P
+                if (answer === 'A') scores.J++;
+                else scores.P++;
+            }
+        }
+    });
+    
+    console.log('MBTI维度得分:', scores);
+    console.log('各维度题目数 - EI:', scores.E + scores.I, 'SN:', scores.S + scores.N, 'TF:', scores.T + scores.F, 'JP:', scores.J + scores.P);
+    
+    // 验证每个维度都有25题
+    const dimensionCounts = {
+        EI: scores.E + scores.I,
+        SN: scores.S + scores.N,
+        TF: scores.T + scores.F,
+        JP: scores.J + scores.P
+    };
+    
+    Object.entries(dimensionCounts).forEach(([dim, count]) => {
+        if (count !== 25) {
+            console.warn(`⚠️ ${dim} 维度题目数异常: ${count}/25`);
         }
     });
     
@@ -366,24 +391,50 @@ function calculateMBTIResult() {
         (scores.T > scores.F ? 'T' : 'F') +
         (scores.J > scores.P ? 'J' : 'P');
     
+    console.log('MBTI最终结果:', result);
     return result;
 }
 
 // 生成报告
 function generateReport() {
-    // 验证答题完整性
-    const hollandIncomplete = appState.hollandAnswers.filter(a => a === null).length;
-    const mbtiIncomplete = appState.mbtiAnswers.filter(a => a === null).length;
+    console.log('开始生成报告，验证答题数据...');
+    console.log('霍兰德答案:', appState.hollandAnswers);
+    console.log('MBTI答案:', appState.mbtiAnswers);
     
-    if (hollandIncomplete > 0 || mbtiIncomplete > 0) {
-        alert(`测试未完成！霍兰德测试还有 ${hollandIncomplete} 题未答，MBTI测试还有 ${mbtiIncomplete} 题未答。请完成所有题目后再提交。`);
-        return;
+    // 严格验证霍兰德测试（必须是60个有效答案）
+    if (!appState.hollandAnswers || appState.hollandAnswers.length !== 60) {
+        alert(`霍兰德测试数据异常！当前答案数量: ${appState.hollandAnswers ? appState.hollandAnswers.length : 0}，需要60个答案。`);
+        return false;
     }
     
-    console.log('答题验证通过 - 霍兰德:', appState.hollandAnswers.length, '题，MBTI:', appState.mbtiAnswers.length, '题');
+    for (let i = 0; i < 60; i++) {
+        const answer = appState.hollandAnswers[i];
+        if (answer === null || answer === undefined || (answer !== 0 && answer !== 1)) {
+            alert(`霍兰德测试第 ${i + 1} 题未正确回答！当前答案: "${answer}"，请完成所有题目。`);
+            return false;
+        }
+    }
+    
+    // 严格验证MBTI测试（必须是100个有效的A或B答案）
+    if (!appState.mbtiAnswers || appState.mbtiAnswers.length !== 100) {
+        alert(`MBTI测试数据异常！当前答案数量: ${appState.mbtiAnswers ? appState.mbtiAnswers.length : 0}，需要100个答案。`);
+        return false;
+    }
+    
+    for (let i = 0; i < 100; i++) {
+        const answer = appState.mbtiAnswers[i];
+        if (answer === null || answer === undefined || (answer !== 'A' && answer !== 'B')) {
+            alert(`MBTI测试第 ${i + 1} 题未正确回答！当前答案: "${answer}"，请完成所有题目。`);
+            return false;
+        }
+    }
+    
+    console.log('✅ 数据验证通过！开始计算结果...');
     
     const hollandCode = calculateHollandResult();
     const mbtiType = calculateMBTIResult();
+    
+    console.log('计算结果 - 霍兰德:', hollandCode, 'MBTI:', mbtiType);
     
     elements.hollandResult.textContent = hollandCode;
     elements.mbtiResult.textContent = mbtiType;
@@ -393,6 +444,7 @@ function generateReport() {
     elements.combinedInsight.textContent = getCombinedInsight(hollandCode, mbtiType);
     
     saveResult(hollandCode, mbtiType);
+    return true;
 }
 
 // 获取霍兰德描述

@@ -362,70 +362,85 @@
     }
 
     function calculateMBTIScores(answers) {
+      console.log('🔍 开始计算MBTI得分，答案数量:', answers ? answers.length : 0);
+      
       const scores = { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
       
       if (!answers || !Array.isArray(answers)) {
-        console.warn('MBTI答题数据无效:', answers);
+        console.error('❌ MBTI答案数据无效或不是数组:', answers);
         return scores;
       }
       
-      console.log('MBTI答题数据长度:', answers.length);
-      console.log('MBTI答题数据详情:', answers);
+      if (answers.length !== 100) {
+        console.warn(`⚠️ MBTI答案数量异常: ${answers.length}/100`);
+      }
       
-      // 统计每个维度的有效答题数
-      const dimensionCounts = { EI: 0, SN: 0, TF: 0, JP: 0 };
-      const invalidAnswers = [];
+      // 严格验证和计算
+      let validAnswers = 0;
+      let invalidAnswers = [];
       
-      // MBTI 100题分为4个维度，每个维度25题
-      // 第1-25题：E vs I (外向 vs 内向) - A选项=E，B选项=I
-      // 第26-50题：S vs N (感觉 vs 直觉) - A选项=S，B选项=N
-      // 第51-75题：T vs F (思考 vs 情感) - A选项=T，B选项=F
-      // 第76-100题：J vs P (判断 vs 知觉) - A选项=J，B选项=P
-      
-      answers.forEach((answer, index) => {
+      for (let i = 0; i < Math.min(answers.length, 100); i++) {
+        const answer = answers[i];
+        
         if (!answer || (answer !== 'A' && answer !== 'B')) {
-          invalidAnswers.push({ index: index + 1, answer });
-          return; // 跳过无效答案
+          invalidAnswers.push({ 
+            questionNumber: i + 1, 
+            answer: answer,
+            expected: 'A 或 B'
+          });
+          continue;
         }
         
-        if (index < 25) {
+        validAnswers++;
+        
+        // 严格按照题目位置计算，确保每个维度25题
+        if (i < 25) {
           // 第1-25题：E vs I
-          dimensionCounts.EI++;
-          if (answer === 'A') {
-            scores.E++;
-          } else if (answer === 'B') {
-            scores.I++;
-          }
-        } else if (index < 50) {
-          // 第26-50题：S vs N
-          dimensionCounts.SN++;
-          if (answer === 'A') {
-            scores.S++;
-          } else if (answer === 'B') {
-            scores.N++;
-          }
-        } else if (index < 75) {
+          if (answer === 'A') scores.E++;
+          else scores.I++;
+        } else if (i < 50) {
+          // 第26-50题：S vs N  
+          if (answer === 'A') scores.S++;
+          else scores.N++;
+        } else if (i < 75) {
           // 第51-75题：T vs F
-          dimensionCounts.TF++;
-          if (answer === 'A') {
-            scores.T++;
-          } else if (answer === 'B') {
-            scores.F++;
-          }
-        } else if (index < 100) {
+          if (answer === 'A') scores.T++;
+          else scores.F++;
+        } else if (i < 100) {
           // 第76-100题：J vs P
-          dimensionCounts.JP++;
-          if (answer === 'A') {
-            scores.J++;
-          } else if (answer === 'B') {
-            scores.P++;
-          }
+          if (answer === 'A') scores.J++;
+          else scores.P++;
+        }
+      }
+      
+      // 计算每个维度的题目总数
+      const dimensionTotals = {
+        EI: scores.E + scores.I,
+        SN: scores.S + scores.N,
+        TF: scores.T + scores.F,
+        JP: scores.J + scores.P
+      };
+      
+      console.log('📊 MBTI计算详情:', {
+        原始答案总数: answers.length,
+        有效答案数: validAnswers,
+        无效答案数: invalidAnswers.length,
+        维度得分: scores,
+        维度题目总数: dimensionTotals
+      });
+      
+      // 检查每个维度是否有25题
+      Object.entries(dimensionTotals).forEach(([dimension, total]) => {
+        if (total !== 25) {
+          console.warn(`⚠️ ${dimension} 维度题目数异常: ${total}/25`);
+        } else {
+          console.log(`✅ ${dimension} 维度题目数正确: ${total}/25`);
         }
       });
       
-      console.log('各维度有效答题数:', dimensionCounts);
-      console.log('无效答案:', invalidAnswers);
-      console.log('MBTI计算结果:', scores);
+      if (invalidAnswers.length > 0) {
+        console.warn('❌ 发现无效答案:', invalidAnswers.slice(0, 10));
+      }
       
       return scores;
     }
