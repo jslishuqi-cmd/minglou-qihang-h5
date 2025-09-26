@@ -291,6 +291,9 @@ function updateHollandQuestion() {
         if (selectedBtn) selectedBtn.classList.add('selected');
         elements.hollandNext.disabled = false;
     }
+    
+    // 更新题目导航栏
+    updateHollandNavigator();
 }
 
 // 更新MBTI题目显示
@@ -334,6 +337,9 @@ function updateMBTIQuestion() {
         if (selectedBtn) selectedBtn.classList.add('selected');
         elements.mbtiNext.disabled = false;
     }
+    
+    // 更新题目导航栏
+    updateMBTINavigator();
 }
 
 // 计算霍兰德结果
@@ -716,8 +722,101 @@ function initializeApp() {
     console.log('初始化应用...');
     initializeAnswers(); // 确保答题数组正确初始化
     initializeEvents();
+    
+    // 初始化题目导航栏
+    setTimeout(() => {
+        initializeHollandNavigator();
+        initializeMBTINavigator();
+    }, 100);
+    
     console.log('应用初始化完成，题库已加载：霍兰德60题，MBTI100题');
     console.log('答题数组状态 - 霍兰德:', appState.hollandAnswers.length, '题，MBTI:', appState.mbtiAnswers.length, '题');
+}
+
+// 初始化霍兰德题目导航栏
+function initializeHollandNavigator() {
+    const navigatorGrid = document.getElementById('holland-navigator');
+    if (!navigatorGrid) return;
+    
+    navigatorGrid.innerHTML = '';
+    for (let i = 1; i <= 60; i++) {
+        const numberBtn = document.createElement('div');
+        numberBtn.className = 'question-number';
+        numberBtn.textContent = i;
+        numberBtn.dataset.index = i - 1;
+        
+        // 点击跳转到对应题目
+        numberBtn.addEventListener('click', function() {
+            appState.hollandIndex = parseInt(this.dataset.index);
+            updateHollandQuestion();
+        });
+        
+        navigatorGrid.appendChild(numberBtn);
+    }
+}
+
+// 更新霍兰德题目导航栏状态
+function updateHollandNavigator() {
+    const navigatorGrid = document.getElementById('holland-navigator');
+    if (!navigatorGrid) return;
+    
+    const numberBtns = navigatorGrid.querySelectorAll('.question-number');
+    numberBtns.forEach((btn, index) => {
+        btn.classList.remove('answered', 'current');
+        
+        // 标记已答题目为绿色
+        if (appState.hollandAnswers[index] !== null && appState.hollandAnswers[index] !== undefined) {
+            btn.classList.add('answered');
+        }
+        
+        // 标记当前题目
+        if (index === appState.hollandIndex) {
+            btn.classList.add('current');
+        }
+    });
+}
+
+// 初始化MBTI题目导航栏
+function initializeMBTINavigator() {
+    const navigatorGrid = document.getElementById('mbti-navigator');
+    if (!navigatorGrid) return;
+    
+    navigatorGrid.innerHTML = '';
+    for (let i = 1; i <= 100; i++) {
+        const numberBtn = document.createElement('div');
+        numberBtn.className = 'question-number';
+        numberBtn.textContent = i;
+        numberBtn.dataset.index = i - 1;
+        
+        // 点击跳转到对应题目
+        numberBtn.addEventListener('click', function() {
+            appState.mbtiIndex = parseInt(this.dataset.index);
+            updateMBTIQuestion();
+        });
+        
+        navigatorGrid.appendChild(numberBtn);
+    }
+}
+
+// 更新MBTI题目导航栏状态
+function updateMBTINavigator() {
+    const navigatorGrid = document.getElementById('mbti-navigator');
+    if (!navigatorGrid) return;
+    
+    const numberBtns = navigatorGrid.querySelectorAll('.question-number');
+    numberBtns.forEach((btn, index) => {
+        btn.classList.remove('answered', 'current');
+        
+        // 标记已答题目为绿色
+        if (appState.mbtiAnswers[index] !== null && appState.mbtiAnswers[index] !== undefined) {
+            btn.classList.add('answered');
+        }
+        
+        // 标记当前题目
+        if (index === appState.mbtiIndex) {
+            btn.classList.add('current');
+        }
+    });
 }
 
 // 页面加载完成后初始化
