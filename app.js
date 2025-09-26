@@ -12,6 +12,18 @@ let appState = {
     mbtiIndex: 0
 };
 
+// 确保答题数组正确初始化
+function initializeAnswers() {
+    if (!appState.hollandAnswers || appState.hollandAnswers.length !== 60) {
+        appState.hollandAnswers = new Array(60).fill(null);
+        console.log('重新初始化霍兰德答案数组');
+    }
+    if (!appState.mbtiAnswers || appState.mbtiAnswers.length !== 100) {
+        appState.mbtiAnswers = new Array(100).fill(null);
+        console.log('重新初始化MBTI答案数组');
+    }
+}
+
 // 页面元素
 const elements = {
     pages: {
@@ -401,32 +413,44 @@ function generateReport() {
     console.log('霍兰德答案:', appState.hollandAnswers);
     console.log('MBTI答案:', appState.mbtiAnswers);
     
-    // 严格验证霍兰德测试（必须是60个有效答案）
-    if (!appState.hollandAnswers || appState.hollandAnswers.length !== 60) {
-        alert(`霍兰德测试数据异常！当前答案数量: ${appState.hollandAnswers ? appState.hollandAnswers.length : 0}，需要60个答案。`);
-        return false;
-    }
-    
+    // 检查霍兰德测试完整性
+    let hollandIncomplete = [];
     for (let i = 0; i < 60; i++) {
         const answer = appState.hollandAnswers[i];
         if (answer === null || answer === undefined || (answer !== 0 && answer !== 1)) {
-            alert(`霍兰德测试第 ${i + 1} 题未正确回答！当前答案: "${answer}"，请完成所有题目。`);
-            return false;
+            hollandIncomplete.push(i + 1);
         }
     }
     
-    // 严格验证MBTI测试（必须是100个有效的A或B答案）
-    if (!appState.mbtiAnswers || appState.mbtiAnswers.length !== 100) {
-        alert(`MBTI测试数据异常！当前答案数量: ${appState.mbtiAnswers ? appState.mbtiAnswers.length : 0}，需要100个答案。`);
+    if (hollandIncomplete.length > 0) {
+        const firstIncomplete = hollandIncomplete[0] - 1;
+        if (confirm(`霍兰德测试还有 ${hollandIncomplete.length} 题未完成。点击确定跳转到第 ${hollandIncomplete[0]} 题继续答题。`)) {
+            // 跳转到霍兰德测试页面的未完成题目
+            appState.hollandIndex = firstIncomplete;
+            showPage('holland');
+            updateHollandQuestion();
+        }
         return false;
     }
     
+    // 检查MBTI测试完整性
+    let mbtiIncomplete = [];
     for (let i = 0; i < 100; i++) {
         const answer = appState.mbtiAnswers[i];
         if (answer === null || answer === undefined || (answer !== 'A' && answer !== 'B')) {
-            alert(`MBTI测试第 ${i + 1} 题未正确回答！当前答案: "${answer}"，请完成所有题目。`);
-            return false;
+            mbtiIncomplete.push(i + 1);
         }
+    }
+    
+    if (mbtiIncomplete.length > 0) {
+        const firstIncomplete = mbtiIncomplete[0] - 1;
+        if (confirm(`MBTI测试还有 ${mbtiIncomplete.length} 题未完成。点击确定跳转到第 ${mbtiIncomplete[0]} 题继续答题。`)) {
+            // 跳转到MBTI测试页面的未完成题目
+            appState.mbtiIndex = firstIncomplete;
+            showPage('mbti');
+            updateMBTIQuestion();
+        }
+        return false;
     }
     
     console.log('✅ 数据验证通过！开始计算结果...');
@@ -548,6 +572,15 @@ function initializeEvents() {
             return;
         }
         appState.userName = name;
+        
+        // 重新初始化答题状态
+        initializeAnswers();
+        appState.hollandIndex = 0;
+        appState.mbtiIndex = 0;
+        
+        console.log('开始测试 - 用户:', name);
+        console.log('答题数组已重置 - 霍兰德:', appState.hollandAnswers.length, '题，MBTI:', appState.mbtiAnswers.length, '题');
+        
         showPage('holland');
         updateHollandQuestion();
     });
@@ -620,6 +653,8 @@ function initializeEvents() {
             const value = e.target.dataset.value;
             appState.mbtiAnswers[appState.mbtiIndex] = value;
             
+            console.log(`MBTI第${appState.mbtiIndex + 1}题答案已保存: ${value}`);
+            
             const buttons = elements.pages.mbti.querySelectorAll('.option-btn');
             buttons.forEach(btn => btn.classList.remove('selected'));
             e.target.classList.add('selected');
@@ -633,19 +668,52 @@ function initializeEvents() {
                     updateMBTIQuestion();
                 } else {
                     // 最后一题，生成报告前验证完整性
+                    console.log('MBTI测试完成，开始生成报告...');
                     generateReport();
-                    showPage('report');
+                    if (document.getElementById('page-report').style.display !== 'block') {
+                        showPage('report');
+                    }
                 }
             }, 250);
         }
     });
+    
+    // 添加调试功能 - 检查答题状态
+    window.debugAnswers = function() {
+        console.log('=== 答题状态调试 ===');
+        console.log('霍兰德答案数组长度:', appState.hollandAnswers.length);
+        console.log('MBTI答案数组长度:', appState.mbtiAnswers.length);
+        
+        const hollandNull = appState.hollandAnswers.filter(a => a === null).length;
+        const mbtiNull = appState.mbtiAnswers.filter(a => a === null).length;
+        
+        console.log('霍兰德未答题数:', hollandNull);
+        console.log('MBTI未答题数:', mbtiNull);
+        
+        if (hollandNull > 0) {
+            const nullIndexes = appState.hollandAnswers.map((a, i) => a === null ? i + 1 : null).filter(i => i !== null);
+            console.log('霍兰德未答题号:', nullIndexes.slice(0, 10));
+        }
+        
+        if (mbtiNull > 0) {
+            const nullIndexes = appState.mbtiAnswers.map((a, i) => a === null ? i + 1 : null).filter(i => i !== null);
+            console.log('MBTI未答题号:', nullIndexes.slice(0, 10));
+        }
+        
+        return {
+            holland: { total: 60, answered: 60 - hollandNull, unanswered: hollandNull },
+            mbti: { total: 100, answered: 100 - mbtiNull, unanswered: mbtiNull }
+        };
+    };
 }
 
 // 初始化应用
 function initializeApp() {
     console.log('初始化应用...');
+    initializeAnswers(); // 确保答题数组正确初始化
     initializeEvents();
     console.log('应用初始化完成，题库已加载：霍兰德60题，MBTI100题');
+    console.log('答题数组状态 - 霍兰德:', appState.hollandAnswers.length, '题，MBTI:', appState.mbtiAnswers.length, '题');
 }
 
 // 页面加载完成后初始化
