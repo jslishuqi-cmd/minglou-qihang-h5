@@ -642,8 +642,11 @@ function initializeEvents() {
             updateMBTIQuestion();
         } else {
             // 最后一题，生成报告前验证完整性
-            generateReport();
-            showPage('report');
+            const success = generateReport();
+            if (success) {
+                showPage('report');
+            }
+            // 如果验证失败，generateReport() 会处理跳转逻辑
         }
     });
 
@@ -669,10 +672,11 @@ function initializeEvents() {
                 } else {
                     // 最后一题，生成报告前验证完整性
                     console.log('MBTI测试完成，开始生成报告...');
-                    generateReport();
-                    if (document.getElementById('page-report').style.display !== 'block') {
+                    const success = generateReport();
+                    if (success) {
                         showPage('report');
                     }
+                    // 如果验证失败，generateReport() 会处理跳转逻辑
                 }
             }, 250);
         }
